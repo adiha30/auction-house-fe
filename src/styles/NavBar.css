@@ -1,0 +1,56 @@
+/* Container for entire navbar */
+.nav-bar {
+    display: flex;
+    justify-content: space-between; /* space between left & right sections */
+    align-items: center;
+    background-color: #fff;
+    padding: 0.75rem 1rem;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 6px;
+}
+
+/* Left section (main links) */
+.nav-left a {
+    margin-right: 1rem;
+    font-weight: 600;
+    color: #333;
+    text-decoration: none;
+}
+.nav-left a:hover {
+    text-decoration: underline;
+}
+
+/* Right section (login/register) */
+.nav-right {
+    display: flex;
+    gap: 0.5rem; /* space between the two buttons */
+}
+
+/* Button-like links */
+.nav-btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.nav-login-btn {
+    color: #007bff;
+    background-color: #e7f0ff;
+    border: 1px solid #cde1ff;
+}
+.nav-login-btn:hover {
+    background-color: #cde1ff;
+}
+
+.nav-register-btn {
+    color: #fff;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+}
+.nav-register-btn:hover {
+    background-color: #0056b3;
+}
