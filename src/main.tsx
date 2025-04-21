@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 
@@ -16,7 +16,8 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const { token } = useAuth(); // re‑renders interceptor when token changes
-    attachAuthInterceptor(() => token);
+    useEffect(() => attachAuthInterceptor(() => token),
+        [token]);
 
     return (
         <ThemeProvider theme={lightTheme}>
