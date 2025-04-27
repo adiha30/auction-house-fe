@@ -64,6 +64,8 @@ export default function EditProfilePage() {
                 <Formik initialValues={initial} validationSchema={schema} onSubmit={(values) => {
                     const payload = {...values};
                     if (!payload.password) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
                         delete payload.password;
                     }
 
@@ -71,6 +73,8 @@ export default function EditProfilePage() {
                         // Remove formatting before submitting
                         payload.ccInfo.ccNumber = payload.ccInfo.ccNumber.replace(/-/g, '');
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-expect-error
                         delete payload.ccInfo;
                     }
 

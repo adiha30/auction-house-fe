@@ -9,9 +9,6 @@ export default function Dashboard() {
 
     if (isLoading) return <CircularProgress sx={{mt: 8}}/>;
     if (error || !user) {
-        console.log(user);
-        console.log(!!user);
-        console.log(error);
         return <Typography mt={8}>Couldn't load profile.</Typography>
     }
 
