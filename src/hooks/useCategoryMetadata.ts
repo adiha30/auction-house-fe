@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getCategories, Category } from '../api/categoryApi';
+import {useQuery} from '@tanstack/react-query';
+import {CategoryMetadata, getCategoryMetadata} from '../api/categoryApi';
 
-export const useCategories = () => {
-    useQuery<Category[]>({
-        queryKey: ['categories'],
-        queryFn: getCategories
+export const useCategoryMetadata = (name?: string) =>
+    useQuery<CategoryMetadata>({
+        queryKey: ['categoryMeta', name],
+        queryFn: () => getCategoryMetadata(name!),
+        enabled: !!name,
     });
-}

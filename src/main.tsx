@@ -15,9 +15,9 @@ const queryClient = new QueryClient();
 const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    const { token } = useAuth(); // re‑renders interceptor when token changes
-    useEffect(() => attachAuthInterceptor(() => token),
-        [token]);
+    const { token, setToken } = useAuth(); // re‑renders interceptor when token changes
+    useEffect(() => attachAuthInterceptor(() => token, () => setToken(null)),
+        [setToken, token]);
 
     return (
         <ThemeProvider theme={lightTheme}>
