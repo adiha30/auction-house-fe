@@ -43,7 +43,7 @@ export default function ListingsPage() {
                             sx={{ cursor: 'pointer' }}
                             onClick={() => nav(`/listings/${listing.listingId}`)}
                             >
-                                <TableCell>{listing.title}</TableCell>
+                                <TableCell>{listing.item.title}</TableCell>
                                 <TableCell align="right">{listing.startPrice}</TableCell>
                                 <TableCell align="right">{listing.buyNowPrice}</TableCell>
                                 <TableCell align="right">

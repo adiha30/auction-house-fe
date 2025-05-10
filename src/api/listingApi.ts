@@ -1,17 +1,22 @@
 import api from './axios.ts'
+import {API_URL} from './config.ts';
+
+export const listingsPath = `/listings`;
+export const uploadsPath = `/uploads`;
 
 export interface ListingSummary {
     listingId: string;
     title: string;
     startPrice: number;
-    buyNowPrice: number;
+    buyNowPrice?: number;
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';
 }
 
 export interface ListingDetails extends ListingSummary {
+    item: any;
     description: string;
-    imageUrl: string;
+    imageIds: string[];
     category: string;
     seller: { userId: string; username: string };
 }
@@ -19,20 +24,33 @@ export interface ListingDetails extends ListingSummary {
 export interface CreateListingPayload {
     title: string;
     description: string;
-    category: string;
-    startPrice: number;
+    categoryName: string;
     buyNowPrice?: number;
     endTime: string;
-    images: string[];
+    imageIds: string[];
 }
 
 export const getAllListings = async () => {
-    const res = await api.get<ListingSummary[]>('/listings');
+    const res = await api.get<ListingSummary[]>(listingsPath);
     return res.data;
 }
 
-export const getListing = (id: string) =>
-    api.get<ListingDetails>(`/listings/${id}`).then((res) => res.data);
+export const getListing = async (id: string) => {
+    const res = await api.get<ListingDetails>(`${listingsPath}/${id}`);
+    return {
+        ...res.data,
+        item: {
+            ...res.data.item,
+            imageIds: res.data.item.imageIds.map((imageId: string) => {
+                return imageId.startsWith('http') ? imageId : `${API_URL}${uploadsPath}/${imageId}`
+            })
+        },
+    };
+};
+
+export const deleteImage = async (id: string) => {
+    await api.delete(`${uploadsPath}/${id}`);
+}
 
 export const createListing = (body: CreateListingPayload) =>
-    api.post('/listings', body).then((res) => res.data);
+    api.post(listingsPath, body).then((res) => res.data);

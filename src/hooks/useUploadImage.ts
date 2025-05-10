@@ -8,12 +8,12 @@ export const useUploadImage = () =>
                 const fd = new FormData();
                 fd.append('file', file);
 
-                const response = await axios.post<{ url: string; }>(
+                const response = await axios.post<{ id: string; }>(
                     '/uploads',
                     fd,
                     {headers: {'Content-Type': 'multipart/form-data'}}
                 );
-                return response.data.url;
+                return response.data.id;
             });
 
             return Promise.all(uploadPromises);

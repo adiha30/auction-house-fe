@@ -1,5 +1,16 @@
 // src/pages/CreateListingPage.tsx
-import {Box, Button, Checkbox, FormControlLabel, IconButton, Paper, Stack, TextField, Typography,} from '@mui/material';
+import {
+    Box,
+    Button,
+    Checkbox,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Paper,
+    Stack,
+    TextField,
+    Typography,
+} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {Clear as ClearIcon} from '@mui/icons-material';
 import {Field, FieldProps, Form, Formik} from 'formik';
@@ -11,12 +22,14 @@ import {useCategoryMetadata} from '../hooks/useCategoryMetadata';
 import {useCreateListing} from '../hooks/useCreateListing';
 import {useUploadImage} from '../hooks/useUploadImage';
 import type {FieldMetadata} from '../api/categoryApi';
+import {API_URL} from '../api/config';
+import {deleteImage, uploadsPath} from "../api/listingApi.ts";
 
 export const pretty = (s: string) =>
     s
         .toLowerCase()
         .split(/[_\s]+/)
-        .map(w => w[0].toUpperCase() + w.slice(1))
+        .map((w) => w[0].toUpperCase() + w.slice(1))
         .join(' ');
 
 function DynamicField({meta}: { meta: FieldMetadata }) {
@@ -29,7 +42,9 @@ function DynamicField({meta}: { meta: FieldMetadata }) {
                             <Checkbox
                                 {...field}
                                 checked={Boolean(field.value)}
-                                onChange={e => form.setFieldValue(field.name, e.target.checked)}
+                                onChange={(e) =>
+                                    form.setFieldValue(field.name, e.target.checked)
+                                }
                             />
                         }
                         label={pretty(meta.name)}
@@ -58,27 +73,33 @@ export default function CreateListingPage({
     const {mutate: uploadImages, isPending: uploading} = useUploadImage();
 
     const {data: meta} = useCategoryMetadata(initialCategory);
-    const [images, setImages] = useState<string[]>([]);
+    const [imageIds, setImageIds] = useState<string[]>([]);
 
     /* ---------- validation schema ---------- */
     const schema = useMemo(() => {
-        const base: Record<string, Yup.AnySchema> = {
+        // Base schema for top-level fields
+        const baseSchema = {
             title: Yup.string().min(3).max(60).required(),
             description: Yup.string().min(10).max(1000).required(),
             startPrice: Yup.number().positive().required(),
             buyNowPrice: Yup.number()
-                .transform(v => (isNaN(v) ? undefined : v))
+                .transform((v) => (isNaN(v) ? undefined : v))
                 .moreThan(Yup.ref('startPrice'), 'Must exceed start price')
                 .optional(),
             duration: Yup.string().required(),
         };
 
-        meta?.requiredFields.forEach(f => {
-            base[`extra.${f.name}`] =
+        // Nested schema for extra fields
+        const extraFields: Record<string, Yup.AnySchema> = {};
+        meta?.requiredFields.forEach((f) => {
+            extraFields[f.name] =
                 f.type === 'boolean' ? Yup.boolean().required() : Yup.string().required();
         });
 
-        return Yup.object(base);
+        return Yup.object({
+            ...baseSchema,
+            extra: Yup.object(extraFields).required(),
+        });
     }, [meta]);
 
     const durationOptions: Record<string, number> = {
@@ -113,17 +134,24 @@ export default function CreateListingPage({
                             }, {} as Record<string, unknown>) || {},
                     }}
                     validationSchema={schema}
-                    onSubmit={({extra, duration, ...base}) => {
+                    onSubmit={({extra, duration, buyNowPrice, ...base}) => {
                         const endTime = dayjs()
                             .add(durationOptions[duration], 'hour')
                             .toISOString();
-                        create.mutate({
+                        const payload = {
                             ...base,
                             ...extra,
-                            category: initialCategory,
+                            categoryName: initialCategory,
                             endTime,
-                            images,
-                        });
+                            imageIds: imageIds,
+                        };
+
+                        if (buyNowPrice !== undefined && buyNowPrice !== '') {
+                            // @ts-expect-error
+                            payload.buyNowPrice = Number(buyNowPrice);
+                        }
+
+                        create.mutate(payload);
                     }}
                 >
                     {({touched, errors, isValid}) => (
@@ -136,11 +164,13 @@ export default function CreateListingPage({
                                     fullWidth
                                     error={touched.title && !!errors.title}
                                     helperText={
-                                        touched.title && errors.title ? String(errors.title) : undefined
+                                        touched.title && errors.title
+                                            ? String(errors.title)
+                                            : undefined
                                     }
                                 />
 
-                                {meta?.requiredFields.map(f => (
+                                {meta?.requiredFields.map((f) => (
                                     <DynamicField key={f.name} meta={f}/>
                                 ))}
 
@@ -191,7 +221,7 @@ export default function CreateListingPage({
                                 <Field name="duration">
                                     {({field}: FieldProps) => (
                                         <TextField select label="Auction length" fullWidth {...field}>
-                                            {Object.keys(durationOptions).map(opt => (
+                                            {Object.keys(durationOptions).map((opt) => (
                                                 <MenuItem key={opt} value={opt}>
                                                     {opt}
                                                 </MenuItem>
@@ -202,51 +232,66 @@ export default function CreateListingPage({
 
                                 {/* ---------- images ---------- */}
                                 <Stack spacing={1}>
-                                    <Button variant="outlined" component="label" disabled={uploading}>
+                                    <Button
+                                        variant="outlined"
+                                        component="label"
+                                        disabled={uploading}
+                                    >
                                         {uploading ? 'Uploading…' : 'Add images'}
                                         <input
                                             hidden
                                             multiple
                                             type="file"
                                             accept="image/*"
-                                            onChange={e => {
+                                            onChange={(e) => {
                                                 const files = Array.from(e.target.files ?? []);
                                                 if (!files.length) return;
                                                 uploadImages(files, {
-                                                    onSuccess: urls => setImages(prev => [...prev, ...urls]),
+                                                    onSuccess: (ids) =>
+                                                        setImageIds((prev) => [...prev, ...ids]),
                                                 });
                                             }}
                                         />
                                     </Button>
 
                                     <Grid container spacing={1}>
-                                        {images.map(url => (
-                                            <Grid item xs={4} key={url}>
-                                                <Box sx={{position: 'relative'}}>
-                                                    <img
-                                                        src={url}
-                                                        alt="preview"
-                                                        width={128}
-                                                        height={128}
-                                                        style={{objectFit: 'cover', borderRadius: 8}}
-                                                    />
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() =>
-                                                            setImages(imgs => imgs.filter(u => u !== url))
-                                                        }
-                                                        sx={{
-                                                            position: 'absolute',
-                                                            top: 2,
-                                                            right: 2,
-                                                            bgcolor: 'white',
-                                                        }}
-                                                    >
-                                                        <ClearIcon fontSize="small"/>
-                                                    </IconButton>
-                                                </Box>
-                                            </Grid>
-                                        ))}
+                                        {imageIds.map((id) => {
+                                            const uploadsEndpoint = `${API_URL}${uploadsPath}/`;
+
+                                            return (
+                                                <Grid component="div" size={{xs: 4}} key={id}>
+                                                    <Box sx={{position: 'relative'}}>
+                                                        <img
+                                                            src={`${uploadsEndpoint}${id}`}
+                                                            alt="preview"
+                                                            width={128}
+                                                            height={128}
+                                                            style={{objectFit: 'cover', borderRadius: 8}}
+                                                        />
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => {
+                                                                setImageIds((imgs) => imgs.filter((u) => u !== id));
+
+                                                                const imageId = id.includes('/uploads/') ?
+                                                                    id.split('/uploads/')[1] :
+                                                                    id;
+                                                                deleteImage(imageId);
+                                                            }
+                                                            }
+                                                            sx={{
+                                                                position: 'absolute',
+                                                                top: 2,
+                                                                right: 2,
+                                                                bgcolor: 'white',
+                                                            }}
+                                                        >
+                                                            <ClearIcon fontSize="small"/>
+                                                        </IconButton>
+                                                    </Box>
+                                                </Grid>
+                                            );
+                                        })}
                                     </Grid>
                                 </Stack>
 
