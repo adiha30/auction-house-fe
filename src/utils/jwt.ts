@@ -17,3 +17,13 @@ export function extractUserId(token: string): string | null {
         return null;
     }
 }
+
+export const isExpired = (token: string) => {
+    try {
+        const { exp } = jwtDecode<{ exp: number }>(token);
+
+        return Date.now() >= exp * 1000;
+    } catch {
+        return true;
+    }
+};

@@ -1,6 +1,6 @@
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Box } from '@mui/material';
+import { Button, TextField, Box, Typography, Stack } from '@mui/material';
 import { useLogin } from '../hooks/useLogin';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +40,16 @@ export default function LoginPage() {
                         <Button variant="contained" type="submit" disabled={login.isPending}>
                             Log in
                         </Button>
+
+                        <Stack direction="row" justifyContent="center" spacing={1} mt={1}>
+                            <Button variant="text" size="small" onClick={() => nav('/')}>
+                                Home
+                            </Button>
+                            <Typography variant="body2" sx={{ lineHeight: 2 }}>•</Typography>
+                            <Button variant="text" size="small" onClick={() => nav('/register')}>
+                                Don't have an account? Register
+                            </Button>
+                        </Stack>
                     </Box>
                 </Form>
             )}

@@ -1,6 +1,6 @@
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
-import {Box, Button, TextField} from '@mui/material';
+import {Box, Button, Stack, TextField, Typography} from '@mui/material';
 import {useRegister} from '../hooks/useRegister';
 import {useNavigate} from 'react-router-dom';
 import {Role} from '../api/authApi';
@@ -41,7 +41,7 @@ export default function RegisterPage() {
             validationSchema={schema}
             onSubmit={(values) => register.mutateAsync(values).then(() => nav('/dashboard'))}
         >
-            {({ errors, touched}) => (
+            {({errors, touched}) => (
                 <Form>
                     <Box display="flex" flexDirection="column" gap={2} width={300} mx="auto" mt={8}>
                         <Field
@@ -70,6 +70,16 @@ export default function RegisterPage() {
                         <Button variant="contained" type="submit" disabled={register.isPending}>
                             Register
                         </Button>
+
+                        <Stack direction="row" justifyContent="center" spacing={1} mt={1}>
+                            <Button variant="text" size="small" onClick={() => nav('/')}>
+                                Home
+                            </Button>
+                            <Typography variant="body2" sx={{ lineHeight: 2 }}>•</Typography>
+                            <Button variant="text" size="small" onClick={() => nav('/register')}>
+                                Don't have an account? Register
+                            </Button>
+                        </Stack>
                     </Box>
                 </Form>
             )}
