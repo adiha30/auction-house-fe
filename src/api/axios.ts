@@ -7,7 +7,7 @@ const instance = axios.create({
 
 export const attachAuthInterceptor = (getToken: () => string | null,
                                       onLogout: () => void) => {
-    instance.interceptors.request.use((config) => {
+    instance.interceptors.request.use(config => {
         const token = getToken();
         if (token) config.headers.Authorization = `Bearer ${token}`;
 

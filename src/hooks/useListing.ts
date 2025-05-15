@@ -34,7 +34,6 @@ export function useListing(id: string) {
     return useQuery({
         queryKey: ['listings', id],
         queryFn: () => getListing(id),
-        retry: 1,
-        onError: (err: unknown) => console.error('Error fetching listing:', err),
+        retry: 1
     });
 }

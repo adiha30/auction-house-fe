@@ -7,16 +7,41 @@ import { lightTheme } from './theme.ts';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SnackbarProvider } from 'notistack';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
-import { attachAuthInterceptor } from './api/axios.ts';
+import axios from "./api/axios.ts";
 
 const queryClient = new QueryClient();
 
-// eslint-disable-next-line react-refresh/only-export-components
-const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    const { token, setToken } = useAuth(); // re‑renders interceptor when token changes
-    useEffect(() => attachAuthInterceptor(() => token, () => setToken(null)),
+export const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
+    const { token, setToken } = useAuth()!; // re‑renders interceptor when token changes
+
+    useEffect(() => {
+            const reqId = axios.interceptors.request.use(config => {
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                } else {
+                    delete config.headers.Authorization;
+                }
+
+                return config;
+            });
+
+            const resId = axios.interceptors.response.use(
+                r => r,
+                err => {
+                    if (err.response?.status === 401 || err.response?.status === 403) {
+                        setToken(null);
+                    }
+
+                    return Promise.reject(err);
+                }
+            );
+
+            return () => {
+                axios.interceptors.request.eject(reqId);
+                axios.interceptors.response.eject(resId);
+            };
+        },
         [setToken, token]);
 
     return (
