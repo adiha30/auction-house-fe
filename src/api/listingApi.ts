@@ -11,6 +11,7 @@ export interface ListingSummary {
     buyNowPrice?: number;
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';
+    finalPrice: number;
 }
 
 export interface ListingDetails extends ListingSummary {
@@ -19,6 +20,7 @@ export interface ListingDetails extends ListingSummary {
     imageIds: string[];
     category: string;
     seller: { userId: string; username: string };
+    finalPrice: number;
 }
 
 export interface CreateListingPayload {
