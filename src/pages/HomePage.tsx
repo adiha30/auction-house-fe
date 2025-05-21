@@ -22,10 +22,11 @@ export default function HomePage() {
 
     // fire off one hot-listings query per category
     const featuredQueries = useQueries({
-        queries: categories.map(cat => ({
-            queryKey: ["hot", cat],
-            queryFn: () => getHotListings(cat, 4),
+        queries: categories.map(category => ({
+            queryKey: ["hot", category],
+            queryFn: () => getHotListings(category, 4),
             enabled: !!token,
+            staleTime: 60_000,
         })),
     });
 

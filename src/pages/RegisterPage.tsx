@@ -18,7 +18,8 @@ const schema = Yup.object({
         .required(),
     ccInfo: Yup.object({
         cardNumber: Yup.string()
-            .matches(/^\d{16}$/, 'Card number must be 16 digits')
+            .matches(/^\d[\d\s-]{14,23}\d$/, 'Card number must be 16 digits')
+            .transform(v => v.replace(/[\s-]/g, ''))
             .notRequired(),
         expirationDate: Yup.string()
             .matches(/^(0[1-9]|1[0-2])\/\d{2}$/, 'Expiration date must be in MM/YY format')

@@ -15,7 +15,7 @@ export interface ListingSummary {
 }
 
 export interface ListingDetails extends ListingSummary {
-    item: any;
+    item: ItemDto;
     description: string;
     imageIds: string[];
     category: string;
@@ -29,6 +29,12 @@ export interface CreateListingPayload {
     categoryName: string;
     buyNowPrice?: number;
     endTime: string;
+    imageIds: string[];
+}
+
+export interface ItemDto {
+    title: string;
+    description: string;
     imageIds: string[];
 }
 

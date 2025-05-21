@@ -1,34 +1,64 @@
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {extractUserId, isExpired} from "../utils/jwt.ts";
+// src/context/AuthContext.tsx
+import React, {createContext, useContext, useEffect, useMemo, useState,} from 'react';
+import {jwtDecode} from 'jwt-decode';
+
+interface JwtPayload {
+    exp: number;          // seconds since epoch
+    userId?: string;
+    sub: string;
+}
 
 type AuthCtx = {
     token: string | null;
     userId: string | null;
-    setToken: (token: string | null) => void;
+    /** Use this to log-in (set JWT) or log-out (pass null) */
+    setToken: (t: string | null) => void;
 };
 
+/* ---------- helpers ---------- */
+function parseJwt(t: string | null): JwtPayload | null {
+    if (!t) return null;
+    try {
+        return jwtDecode<JwtPayload>(t);
+    } catch {
+        return null;
+    }
+}
+
+function isExpired(payload: JwtPayload | null): boolean {
+    return !payload || Date.now() >= payload.exp * 1000;
+}
+
+/* ---------- context ---------- */
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
-    const [token, setToken] = useState<string | null>((() => localStorage.getItem('token')));
-    const [userId, setUserId] = useState<string | null>((() => localStorage.getItem('userId')));
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+                                                                          children,
+                                                                      }) => {
+    const [token, setToken] = useState<string | null>(
+        () => localStorage.getItem('token')
+    );
+
+    const payload = useMemo(() => parseJwt(token), [token]);
+    const userId = payload?.userId ?? null;
 
     useEffect(() => {
-        if (!token || isExpired(token)) {
-            setToken(null);
+        if (!token || isExpired(payload)) {
             localStorage.removeItem('token');
             localStorage.removeItem('userId');
-            setUserId(null);
+            if (token) setToken(null);
         } else {
             localStorage.setItem('token', token);
-            const id = extractUserId(token);
-            setUserId(id);
-            if (id) localStorage.setItem('userId', id);
+            if (userId) {
+                localStorage.setItem('userId', userId);
+            } else {
+                localStorage.removeItem('userId');
+            }
         }
-    }, [token]);
+    }, [token, payload, userId]);
 
+    const ctx: AuthCtx = {token, userId, setToken};
 
-    return <AuthContext.Provider value={{token, userId, setToken}}>{children}</AuthContext.Provider>
-
-}
+    return <AuthContext.Provider value={ctx}>{children}</AuthContext.Provider>;
+};

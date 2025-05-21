@@ -26,6 +26,7 @@ import {useBids} from '../hooks/useBids.ts';
 import {isAxiosError} from "axios";
 
 export default function ListingDetailsPage() {
+    const queryClient = useQueryClient();
     const {id} = useParams<{ id: string }>();
     const {token} = useAuth()!;
     const {data: listing, isLoading, error} = useListing(id!);
@@ -56,7 +57,7 @@ export default function ListingDetailsPage() {
                 <Typography variant="body2" color="textSecondary">
                     {message}
                 </Typography>
-                <Button variant="outlined" onClick={() => window.location.reload()}>
+                <Button variant="outlined" onClick={() => queryClient.invalidateQueries({queryKey: ['listing', id]})}>
                     Try Again
                 </Button>
             </Box>

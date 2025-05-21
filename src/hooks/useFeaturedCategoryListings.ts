@@ -7,5 +7,6 @@ export const useFeaturedCategoryListings = (category: string) => {
     return useQuery<ListingSummary[]>({
         queryKey: ['featuredListings', category],
         queryFn: () => getHotListings(category, limit),
+        staleTime: 30_000,
     });
 }

@@ -11,6 +11,7 @@ export const useCreateBid = (listingId: string) => {
             createBid({listingId, ...payload}),
         onSuccess: () => {
             enqueueSnackbar('Bid placed!', {variant: 'success'});
+            queryClient.invalidateQueries({queryKey: ['listings']});
             queryClient.invalidateQueries({queryKey: ['listings', listingId]});
             queryClient.invalidateQueries({queryKey: ['bids', listingId]});
         },
