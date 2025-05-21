@@ -1,3 +1,6 @@
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import {useWatch} from '../hooks/useWatch';
 import {
     Box,
     Button,
@@ -6,6 +9,7 @@ import {
     CardMedia,
     CircularProgress,
     Divider,
+    IconButton,
     Stack,
     TextField,
     Typography
@@ -19,23 +23,39 @@ import {useCategoryMetadata} from '../hooks/useCategoryMetadata.ts';
 import {Field, Form, Formik} from 'formik';
 import {useCreateBid} from '../hooks/useCreateBid';
 import {useBids} from '../hooks/useBids.ts';
+import {isAxiosError} from "axios";
 
 export default function ListingDetailsPage() {
-    const {id} = useParams();
+    const {id} = useParams<{ id: string }>();
     const {token} = useAuth()!;
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
 
     const createBid = useCreateBid(id!);
-    const { data: bids, isLoading: bidsLoading, error: bidsError } = useBids(id!);
+    const {data: bids, isLoading: bidsLoading, error: bidsError} = useBids(id!);
+
+    const {watching, toggle} = useWatch(id!);
 
     if (isLoading) return <CircularProgress sx={{mt: 8}}/>;
     if (error) {
         console.error("Error loading listing:", error);
+        let message = "Please check your connection and try again.";
+
+        if (isAxiosError(error)) {
+            message =
+                (error.response?.data as any)?.message ??
+                (error.response?.data as any)?.cause ??
+                error.message;
+        }
+
         return (
-            <Box mt={8}>
-                <Typography variant="h6" color="error">Couldn't load listing</Typography>
-                <Typography>{JSON.stringify(error)}</Typography>
+            <Box mt={8} textAlign="center">
+                <Typography variant="h6" color="error">
+                    Couldn't load listing
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                    {message}
+                </Typography>
                 <Button variant="outlined" onClick={() => window.location.reload()}>
                     Try Again
                 </Button>
@@ -56,7 +76,20 @@ export default function ListingDetailsPage() {
             <Card sx={{maxWidth: 800, p: 2}}>
                 <CardMedia component="img" height="320" image={listing.item.imageIds[0]} alt={listing.item.title}/>
                 <CardContent>
-                    <Typography variant="h4">{listing.item.title}</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{mb: 1}}>
+                        <Typography variant="h4">
+                            {listing.item.title}
+                        </Typography>
+
+                        <IconButton
+                            size="small"
+                            onClick={() => toggle.mutate()}
+                            title={watching ? 'Unwatch' : 'Watch'}
+                        >
+                            {watching ? <VisibilityOffIcon/> : <VisibilityIcon/>}
+                        </IconButton>
+                    </Stack>
+
                     <Typography color="text.secondary" gutterBottom>
                         {listing.category} · {listing.status}
                     </Typography>
@@ -64,8 +97,10 @@ export default function ListingDetailsPage() {
                     <Typography sx={{my: 2}}>{listing.item.description}</Typography>
 
                     <Stack direction="row" spacing={4}>
-                        <Typography><b>Highest current bid:</b> ${highestBid}</Typography>
-                        {(listing.buyNowPrice ?? 0) > 0 && <Typography><b>Buy-Now:</b> ${listing.buyNowPrice}</Typography>}
+                        <Typography><b>{listing.status === 'OPEN' ? 'Highest current bid:' : 'Winning Bid: '}</b> ${highestBid}
+                        </Typography>
+                        {(listing.buyNowPrice ?? 0) > 0 &&
+                            <Typography><b>Buy-Now:</b> ${listing.buyNowPrice}</Typography>}
                         <Typography><b>Ends:</b> {timeLeft}</Typography>
                     </Stack>
 
@@ -73,7 +108,7 @@ export default function ListingDetailsPage() {
                         {listing.status === 'OPEN' && token && (
                             <Formik
                                 enableReinitialize
-                                initialValues={{ amount: highestBid + minIncrement }}
+                                initialValues={{amount: highestBid + minIncrement}}
                                 validationSchema={Yup.object({
                                     amount: Yup.number()
                                         .min(highestBid + minIncrement, `Must be at least $${highestBid + minIncrement}`)
@@ -128,24 +163,24 @@ export default function ListingDetailsPage() {
                         )}
                     </Stack>
                 </CardContent>
-                <Divider />
+                <Divider/>
                 <CardContent>
-                    <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                    <Typography variant="h6" gutterBottom sx={{mt: 2}}>
                         Bidding History
                     </Typography>
 
                     {bidsLoading ? (
-                        <CircularProgress size={24} />
-                    ) : bidsError ?(
+                        <CircularProgress size={24}/>
+                    ) : bidsError ? (
                         <Typography color="error">Failed to load bids.</Typography>
                     ) : sortedBids.length > 0 ? (
                         <Stack spacing={1}>
                             {sortedBids.map(bid => (
-                                <Box key={bid.bidId} sx={{ borderBottom: '1px solid #eee', pb: 1 }}>
+                                <Box key={bid.bidId} sx={{borderBottom: '1px solid #eee', pb: 1}}>
                                     <Typography>
                                         <strong>{bid.bidder.username}</strong> — ${bid.amount}{' '}
                                         <Box component="span" color="text.secondary">
-                                            ({formatDistanceToNow(new Date(bid.createdAt), { addSuffix: true })})
+                                            ({formatDistanceToNow(new Date(bid.createdAt), {addSuffix: true})})
                                         </Box>
                                     </Typography>
                                 </Box>

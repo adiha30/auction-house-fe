@@ -1,8 +1,8 @@
-import { Formik, Form, Field } from 'formik';
+import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Box, Typography, Stack } from '@mui/material';
-import { useLogin } from '../hooks/useLogin';
-import { useNavigate } from 'react-router-dom';
+import {Box, Button, Stack, TextField, Typography} from '@mui/material';
+import {useLogin} from '../hooks/useLogin';
+import {useNavigate} from 'react-router-dom';
 
 const schema = Yup.object({
     username: Yup.string().required(),
@@ -17,7 +17,7 @@ export default function LoginPage() {
         <Formik
             initialValues={{ username: '', password: '' }}
             validationSchema={schema}
-            onSubmit={(values) => login.mutateAsync(values).then(() => nav('/dashboard'))}
+            onSubmit={(values) => login.mutateAsync(values).then(() => nav('/'))}
         >
             {({ errors, touched }) => (
                 <Form>

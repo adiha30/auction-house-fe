@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import LoginPage from "./pages/LoginPage.tsx";
 import RegisterPage from "./pages/RegisterPage.tsx";
 import {PrivateRoute} from "./router/PrivateRoute.tsx";
@@ -9,16 +9,15 @@ import ListingsPage from './pages/ListingsPage.tsx'
 import NavBar from './components/NavBar.tsx';
 import ListingDetailsPage from "./pages/ListingDetailsPage.tsx";
 import CreateListingCategoryPage from './pages/CreateListingCategoryPage';
-import CreateListingDetailsPage  from './pages/CreateListingDetailPage.tsx';
+import CreateListingDetailsPage from './pages/CreateListingDetailPage.tsx';
+import HomePage from "./pages/HomePage.tsx";
 
-
-const Home = () => <h2>Home</h2>
 
 const App: React.FC = () => (
     <BrowserRouter>
         <NavBar />
         <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<HomePage/>}/>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
