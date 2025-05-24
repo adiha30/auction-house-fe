@@ -63,6 +63,9 @@ export const getListing = async (id: string) => {
 export const getUserListings = async () =>
     await api.get<ListingDetails[]>(`${listingsPath}/user/listings`).then((res) => res.data);
 
+export const getUserOpenListings = async () =>
+    await api.get<ListingDetails[]>(`${listingsPath}/user/listings/open`).then((res) => res.data);
+
 export const deleteImage = async (id: string) => {
     await api.delete(`${uploadsPath}/${id}`);
 

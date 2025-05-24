@@ -55,7 +55,7 @@ export default function ListingDetailsPage() {
                 <Typography variant="h6" color="error">
                     Couldn't load listing
                 </Typography>
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" color="text.secondary">
                     {message}
                 </Typography>
                 <Button variant="outlined" onClick={() => queryClient.invalidateQueries({queryKey: ['listing', id]})}>

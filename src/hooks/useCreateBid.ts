@@ -6,14 +6,21 @@ import {AxiosError} from "axios";
 export const useCreateBid = (listingId: string) => {
     const queryClient = useQueryClient();
 
+    function invalidateListingQueries() {
+        queryClient.invalidateQueries({queryKey: ['listings']});
+        queryClient.invalidateQueries({queryKey: ['listings', listingId]});
+        queryClient.invalidateQueries({queryKey: ['bids', listingId]});
+        queryClient.invalidateQueries({queryKey: ['bids', listingId]});
+        queryClient.invalidateQueries({queryKey: ['featuredListings']});
+        queryClient.invalidateQueries({queryKey: ['listings', 'category']});
+    }
+
     return useMutation({
         mutationFn: (payload: Omit<CreateBidPayload, 'listingId'>) =>
             createBid({listingId, ...payload}),
         onSuccess: () => {
             enqueueSnackbar('Bid placed!', {variant: 'success'});
-            queryClient.invalidateQueries({queryKey: ['listings']});
-            queryClient.invalidateQueries({queryKey: ['listings', listingId]});
-            queryClient.invalidateQueries({queryKey: ['bids', listingId]});
+            invalidateListingQueries();
         },
         onError: (error: AxiosError<{ cause?: string }>) => {
                 const msg =

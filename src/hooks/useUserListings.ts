@@ -1,7 +1,7 @@
 import {useQuery} from '@tanstack/react-query'
-import {getUserListings, ListingDetails} from '../api/listingApi'
+import {getUserOpenListings, ListingDetails} from '../api/listingApi'
 
 export const useUserListings = () => useQuery<ListingDetails[]>({
     queryKey: ['mylistings'],
-    queryFn: async () => (await getUserListings()).filter(listing => listing.status === 'OPEN'),
+    queryFn: async () => (await getUserOpenListings()),
 });
