@@ -10,7 +10,6 @@ interface RegisterPayload {
     username: string;
     email: string;
     password: string;
-    role: Role;
     ccInfo?: CcInfo;
 }
 

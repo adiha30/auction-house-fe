@@ -15,7 +15,7 @@ export interface ListingSummary {
 }
 
 export interface ListingDetails extends ListingSummary {
-    item: any;
+    item: ItemDto;
     description: string;
     imageIds: string[];
     category: string;
@@ -32,10 +32,20 @@ export interface CreateListingPayload {
     imageIds: string[];
 }
 
+export interface ItemDto {
+    title: string;
+    description: string;
+    imageIds: string[];
+}
+
 export const getAllListings = async () => {
     const res = await api.get<ListingSummary[]>(listingsPath);
     return res.data;
 }
+
+export const getHotListings = async (category: string, limit: number) =>
+    await api.get<ListingSummary[]>(`${listingsPath}/${category}/featured`, {params: {limit}})
+        .then((res) => res.data);
 
 export const getListing = async (id: string) => {
     const res = await api.get<ListingDetails>(`${listingsPath}/${id}`);
@@ -50,8 +60,15 @@ export const getListing = async (id: string) => {
     };
 };
 
+export const getUserListings = async () =>
+    await api.get<ListingDetails[]>(`${listingsPath}/user/listings`).then((res) => res.data);
+
+export const getUserOpenListings = async () =>
+    await api.get<ListingDetails[]>(`${listingsPath}/user/listings/open`).then((res) => res.data);
+
 export const deleteImage = async (id: string) => {
     await api.delete(`${uploadsPath}/${id}`);
+
 }
 
 export const createListing = (body: CreateListingPayload) =>

@@ -2,11 +2,11 @@ import React, {useEffect} from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { lightTheme } from './theme.ts';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SnackbarProvider } from 'notistack';
-import { AuthProvider, useAuth } from './context/AuthContext.tsx';
+import {CssBaseline, ThemeProvider} from '@mui/material';
+import {lightTheme} from './theme.ts';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {SnackbarProvider} from 'notistack';
+import {AuthProvider, useAuth} from './context/AuthContext.tsx';
 import axios from "./api/axios.ts";
 
 const queryClient = new QueryClient();
@@ -17,6 +17,8 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({ children })
 
     useEffect(() => {
             const reqId = axios.interceptors.request.use(config => {
+                config.headers = config.headers ?? {};
+
                 if (token) {
                     config.headers.Authorization = `Bearer ${token}`;
                 } else {
@@ -29,7 +31,7 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({ children })
             const resId = axios.interceptors.response.use(
                 r => r,
                 err => {
-                    if (err.response?.status === 401 || err.response?.status === 403) {
+                    if (err.response?.status === 401) {
                         setToken(null);
                     }
 

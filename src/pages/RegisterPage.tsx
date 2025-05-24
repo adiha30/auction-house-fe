@@ -3,7 +3,6 @@ import * as Yup from 'yup';
 import {Box, Button, Stack, TextField, Typography} from '@mui/material';
 import {useRegister} from '../hooks/useRegister';
 import {useNavigate} from 'react-router-dom';
-import {Role} from '../api/authApi';
 
 const schema = Yup.object({
     username: Yup.string()
@@ -17,10 +16,10 @@ const schema = Yup.object({
         .min(8, 'Password must be at least 8 characters')
         .max(20, 'Password must be 20 characters or less')
         .required(),
-    role: Yup.string().required('Role is required'),
     ccInfo: Yup.object({
         cardNumber: Yup.string()
-            .matches(/^\d{16}$/, 'Card number must be 16 digits')
+            .matches(/^\d[\d\s-]{14,23}\d$/, 'Card number must be 16 digits')
+            .transform(v => v.replace(/[\s-]/g, ''))
             .notRequired(),
         expirationDate: Yup.string()
             .matches(/^(0[1-9]|1[0-2])\/\d{2}$/, 'Expiration date must be in MM/YY format')
@@ -37,7 +36,7 @@ export default function RegisterPage() {
 
     return (
         <Formik
-            initialValues={{username: '', email: '', password: '', role: Role.USER, ccInfo: {}}}
+            initialValues={{username: '', email: '', password: '', ccInfo: {}}}
             validationSchema={schema}
             onSubmit={(values) => register.mutateAsync(values).then(() => nav('/dashboard'))}
         >

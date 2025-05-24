@@ -10,7 +10,10 @@ const schema = Yup.object({
     email: Yup.string().email().required(),
     password: Yup.string().min(8).max(20).notRequired(),
     ccInfo: Yup.object({
-        ccNumber: Yup.string().matches(/^\d{4}-\d{4}-\d{4}-\d{4}$/, 'Invalid format').notRequired(),
+        ccNumber: Yup.string()
+            .matches(/^\d[\d\s-]{14,23}\d$/, 'Card number must be 16 digits')
+            .transform(v => v.replace(/[\s-]/g, ''))
+            .notRequired(),
         ccExpiry: Yup.string().matches(/^(0[1-9]|1[0-2])\/\d{2}$/, 'MM/YY').notRequired(),
         ccCvc: Yup.string().matches(/^\d{3,4}$/, '3‑4 digits').notRequired(),
     }).notRequired(),
