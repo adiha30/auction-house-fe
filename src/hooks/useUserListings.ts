@@ -3,5 +3,5 @@ import {getUserListings, ListingDetails} from '../api/listingApi'
 
 export const useUserListings = () => useQuery<ListingDetails[]>({
     queryKey: ['mylistings'],
-    queryFn: (await getUserListings()).filter(listing => listing.status === 'OPEN'),
+    queryFn: async () => (await getUserListings()).filter(listing => listing.status === 'OPEN'),
 });

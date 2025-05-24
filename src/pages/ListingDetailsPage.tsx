@@ -24,6 +24,7 @@ import {Field, Form, Formik} from 'formik';
 import {useCreateBid} from '../hooks/useCreateBid';
 import {useBids} from '../hooks/useBids.ts';
 import {isAxiosError} from "axios";
+import {useQueryClient} from "@tanstack/react-query";
 
 export default function ListingDetailsPage() {
     const queryClient = useQueryClient();
@@ -85,6 +86,7 @@ export default function ListingDetailsPage() {
                         <IconButton
                             size="small"
                             onClick={() => toggle.mutate()}
+                            disabled={toggle.isPending}
                             title={watching ? 'Unwatch' : 'Watch'}
                         >
                             {watching ? <VisibilityOffIcon/> : <VisibilityIcon/>}
