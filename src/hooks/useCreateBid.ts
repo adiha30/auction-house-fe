@@ -10,7 +10,6 @@ export const useCreateBid = (listingId: string) => {
         queryClient.invalidateQueries({queryKey: ['listings']});
         queryClient.invalidateQueries({queryKey: ['listings', listingId]});
         queryClient.invalidateQueries({queryKey: ['bids', listingId]});
-        queryClient.invalidateQueries({queryKey: ['bids', listingId]});
         queryClient.invalidateQueries({queryKey: ['featuredListings']});
         queryClient.invalidateQueries({queryKey: ['listings', 'category']});
     }
