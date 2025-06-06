@@ -36,7 +36,7 @@ export function useWatch(listingId: string) {
         },
 
         onSuccess: () => {
-            const text = watching ? 'unwatched' : 'watching';
+            const text = watching ? 'watching' : 'unwatching';
             enqueueSnackbar(`Now ${text} this listing`, {variant: 'success'});
         },
 
