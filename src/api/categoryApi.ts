@@ -6,7 +6,8 @@ export interface FieldMetadata {
     name: string;
     type: 'string' | 'boolean' | 'number' | 'date' | 'enum';
     options?: string[];
-    min?: number; max?: number;
+    min?: number;
+    max?: number;
 }
 
 export interface CategoryMetadata {

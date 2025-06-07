@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import {useMutation} from '@tanstack/react-query';
 import axios from '../api/axios';
 
 export const useUploadImage = () =>

@@ -74,7 +74,7 @@ export default function RegisterPage() {
                             <Button variant="text" size="small" onClick={() => nav('/')}>
                                 Home
                             </Button>
-                            <Typography variant="body2" sx={{ lineHeight: 2 }}>•</Typography>
+                            <Typography variant="body2" sx={{lineHeight: 2}}>•</Typography>
                             <Button variant="text" size="small" onClick={() => nav('/register')}>
                                 Don't have an account? Register
                             </Button>

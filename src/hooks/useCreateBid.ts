@@ -7,11 +7,20 @@ export const useCreateBid = (listingId: string) => {
     const queryClient = useQueryClient();
 
     function invalidateListingQueries() {
-        queryClient.invalidateQueries({queryKey: ['listings']});
-        queryClient.invalidateQueries({queryKey: ['listings', listingId]});
-        queryClient.invalidateQueries({queryKey: ['bids', listingId]});
-        queryClient.invalidateQueries({queryKey: ['featuredListings']});
-        queryClient.invalidateQueries({queryKey: ['listings', 'category']});
+        queryClient.invalidateQueries({
+            predicate: (query) => {
+                const key = query.queryKey;
+                return (
+                    (Array.isArray(key) && (
+                        (key[0] === 'listings') ||
+                        (key[0] === 'bids' && key[1] === listingId) ||
+                        (key[0] === 'featuredListings') ||
+                        (key[0] === 'watch' && key[1] === listingId) ||
+                        (key[0] === 'listings' && key[1] === 'category')
+                    ))
+                );
+            }
+        });
     }
 
     return useMutation({
@@ -22,10 +31,10 @@ export const useCreateBid = (listingId: string) => {
             invalidateListingQueries();
         },
         onError: (error: AxiosError<{ cause?: string }>) => {
-                const msg =
-                    error?.response?.data?.cause ??
-                    'Bid failed - please try again';
-                enqueueSnackbar(msg, {variant: 'error'});
+            const msg =
+                error?.response?.data?.cause ??
+                'Bid failed - please try again';
+            enqueueSnackbar(msg, {variant: 'error'});
         },
     });
 }

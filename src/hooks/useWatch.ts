@@ -1,6 +1,6 @@
 // src/hooks/useWatch.ts
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {addWatch, isWatching, removeWatch} from '@/api/watchApi';
+import {addWatch, isWatching, removeWatch} from '../api/watchApi';
 import {enqueueSnackbar} from 'notistack';
 import {AxiosError} from 'axios';
 
@@ -36,7 +36,7 @@ export function useWatch(listingId: string) {
         },
 
         onSuccess: () => {
-            const text = watching ? 'unwatched' : 'watching';
+            const text = watching ? 'watching' : 'unwatching';
             enqueueSnackbar(`Now ${text} this listing`, {variant: 'success'});
         },
 

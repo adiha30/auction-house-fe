@@ -6,5 +6,5 @@ export default function CreateListingDetailPage() {
 
     if (!category) return <Navigate to="/create" replace/>;
 
-    return <CreateListingPage initialCategory={decodeURIComponent(category)} />;
+    return <CreateListingPage initialCategory={decodeURIComponent(category)}/>;
 }
