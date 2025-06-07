@@ -95,7 +95,7 @@ export function useNotifications() {
     });
 
     useEffect(() => {
-        const log = (...a:any[]) => console.info("[WS]", ...a);
+        const log = (...a: any[]) => console.info("[WS]", ...a);
 
         if (!userId || !token) return;
 

@@ -15,11 +15,11 @@ export default function LoginPage() {
 
     return (
         <Formik
-            initialValues={{ username: '', password: '' }}
+            initialValues={{username: '', password: ''}}
             validationSchema={schema}
             onSubmit={(values) => login.mutateAsync(values).then(() => nav('/'))}
         >
-            {({ errors, touched }) => (
+            {({errors, touched}) => (
                 <Form>
                     <Box display="flex" flexDirection="column" gap={2} width={300} mx="auto" mt={8}>
                         <Field
@@ -45,7 +45,7 @@ export default function LoginPage() {
                             <Button variant="text" size="small" onClick={() => nav('/')}>
                                 Home
                             </Button>
-                            <Typography variant="body2" sx={{ lineHeight: 2 }}>•</Typography>
+                            <Typography variant="body2" sx={{lineHeight: 2}}>•</Typography>
                             <Button variant="text" size="small" onClick={() => nav('/register')}>
                                 Don't have an account? Register
                             </Button>

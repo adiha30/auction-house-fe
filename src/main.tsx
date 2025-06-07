@@ -11,9 +11,9 @@ import axios from "./api/axios.ts";
 
 const queryClient = new QueryClient();
 
-export const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const Providers: React.FC<{ children: React.ReactNode }> = ({children}) => {
 
-    const { token, setToken } = useAuth()!; // re‑renders interceptor when token changes
+    const {token, setToken} = useAuth()!; // re‑renders interceptor when token changes
 
     useEffect(() => {
             const reqId = axios.interceptors.request.use(config => {
@@ -48,7 +48,7 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({ children })
 
     return (
         <ThemeProvider theme={lightTheme}>
-            <CssBaseline />
+            <CssBaseline/>
             <QueryClientProvider client={queryClient}>
                 <SnackbarProvider maxSnack={3}>{children}</SnackbarProvider>
             </QueryClientProvider>
@@ -60,7 +60,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <AuthProvider>
             <Providers>
-                <App />
+                <App/>
             </Providers>
         </AuthProvider>
     </React.StrictMode>

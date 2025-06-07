@@ -9,8 +9,8 @@ export const useLogin = () => {
         mutationFn: login,
         onSuccess: (jwt) => {
             auth?.setToken(jwt);
-            enqueueSnackbar('Welcome!', { variant: 'success' });
+            enqueueSnackbar('Welcome!', {variant: 'success'});
         },
-        onError: () => enqueueSnackbar('Invalid credentials', { variant: 'error' }),
+        onError: () => enqueueSnackbar('Invalid credentials', {variant: 'error'}),
     });
 };

@@ -98,7 +98,10 @@ export default function NotificationMenu() {
                                     primary={
                                         <Typography
                                             variant="body2"
-                                            sx={{fontWeight: notification.read ? "normal" : "bold", whiteSpace: "normal"}}
+                                            sx={{
+                                                fontWeight: notification.read ? "normal" : "bold",
+                                                whiteSpace: "normal"
+                                            }}
                                         >
                                             {notification.text}
                                         </Typography>

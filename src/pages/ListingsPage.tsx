@@ -15,15 +15,15 @@ import {useNavigate} from 'react-router-dom';
 import {useListings} from '../hooks/useListings';
 
 export default function ListingsPage() {
-    const { data: listings, isLoading, error } = useListings();
+    const {data: listings, isLoading, error} = useListings();
     const nav = useNavigate();
 
-    if (isLoading) return <CircularProgress sx={{ mt: 8}}  />;
+    if (isLoading) return <CircularProgress sx={{mt: 8}}/>;
     if (error || !listings) return <Typography mt={8}>Couldn’t load listings.</Typography>;
 
     return (
         <Box mt={4} display="flex" justifyContent="center">
-            <TableContainer component={Paper} sx={{ maxWidth: 900 }}>
+            <TableContainer component={Paper} sx={{maxWidth: 900}}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -38,10 +38,10 @@ export default function ListingsPage() {
                     <TableBody>
                         {listings.map((listing) => (
                             <TableRow
-                            key={listing.listingId}
-                            hover
-                            sx={{ cursor: 'pointer' }}
-                            onClick={() => nav(`/listings/${listing.listingId}`)}
+                                key={listing.listingId}
+                                hover
+                                sx={{cursor: 'pointer'}}
+                                onClick={() => nav(`/listings/${listing.listingId}`)}
                             >
                                 <TableCell>{listing.item.title}</TableCell>
                                 <TableCell align="right">{listing.latestBidAmount ?? listing.startPrice}</TableCell>
