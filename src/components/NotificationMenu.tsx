@@ -100,7 +100,7 @@ export default function NotificationMenu() {
                                             variant="body2"
                                             sx={{fontWeight: notification.read ? "normal" : "bold", whiteSpace: "normal"}}
                                         >
-                                            {notification.message}
+                                            {notification.text}
                                         </Typography>
                                     }
                                     secondary={

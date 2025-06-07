@@ -111,11 +111,17 @@ export default function ListingDetailsPage() {
                         {listing.status === 'OPEN' && token && (
                             <Formik
                                 enableReinitialize
-                                initialValues={{amount: highestBid + minIncrement}}
+                                initialValues={{amount: listing.buyNowPrice ? Math.min(highestBid + minIncrement, listing.buyNowPrice) : highestBid + minIncrement}}
                                 validationSchema={Yup.object({
                                     amount: Yup.number()
-                                        .min(highestBid + minIncrement, `Must be at least $${highestBid + minIncrement}`)
-                                        .required(),
+                                        .required()
+                                        .test(
+                                            'min-or-buy-now',
+                                            `Must be at least $${highestBid + minIncrement}`,
+                                            function (value) {
+                                                return value === listing.buyNowPrice || (value !== undefined && value >= highestBid + minIncrement);
+                                            }
+                                        )
                                 })}
                                 onSubmit={({amount}) =>
                                     createBid.mutate({amount, buy_now: false})
@@ -190,7 +196,7 @@ export default function ListingDetailsPage() {
                             ))}
                         </Stack>
                     ) : (
-                        <Typography>No bids yet. Be the first!</Typography>
+                        <Typography>No bids yet</Typography>
                     )}
                 </CardContent>
             </Card>

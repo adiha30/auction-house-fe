@@ -11,7 +11,7 @@ export interface Notification {
     type: string;
     relatedUserId?: string | null;
     listingId?: string | null;
-    message: string;
+    text: string;
     createdAt: string;
     targetUrl: string;
     read: boolean;
@@ -95,27 +95,37 @@ export function useNotifications() {
     });
 
     useEffect(() => {
+        const log = (...a:any[]) => console.info("[WS]", ...a);
+
         if (!userId || !token) return;
 
         const stomp = new Client({
             webSocketFactory: () => new SockJS(`${import.meta.env.VITE_API_URL.replace(/\$/, "")}/ws`),
-            reconnectDelay: 5_000,
-            onConnect: () =>
+            debug: log,
+            reconnectDelay: 0,
+            onConnect: () => {
+                log("CONNECTED");
                 stomp.subscribe(`/topic/notifications/${userId}`, (m: IMessage) => {
+                    log("GOT", m.body);
                     try {
-                        const n = JSON.parse(m.body) as Notification;
-                        enqueueSnackbar(n.message, {
+                        const notification = JSON.parse(m.body) as Notification;
+                        enqueueSnackbar(notification.text, {
                             variant: "info",
                             anchorOrigin: {vertical: "bottom", horizontal: "left"},
                         });
-                        queryClient.setQueryData<Notification[]>(["notifications", userId], (old = []) => [n, ...old]);
-                        queryClient.setQueryData(["unreadCount", userId], (old?: number) => (old ?? 0) + 1);
+                        queryClient.setQueryData<Notification[]>(["notifications", userId], (old = []) => [notification, ...old]);
+                        queryClient.setQueryData(
+                            ["unreadCount", userId],
+                            (old: number = 0) => old + 1
+                        )
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
                     }
-                }),
+                })
+            },
         });
 
+        stomp.onStompError = (f) => log('STOMP ERROR', f);
         stomp.activate();
         return () => {
             stomp.deactivate();
