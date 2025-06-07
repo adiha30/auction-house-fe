@@ -12,6 +12,7 @@ export interface ListingSummary {
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';
     finalPrice: number;
+    latestBidAmount?: number | null;
 }
 
 export interface ListingDetails extends ListingSummary {

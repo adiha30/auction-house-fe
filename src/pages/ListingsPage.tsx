@@ -28,7 +28,7 @@ export default function ListingsPage() {
                     <TableHead>
                         <TableRow>
                             <TableCell>Title</TableCell>
-                            <TableCell align="right">Start Price</TableCell>
+                            <TableCell align="right">Current price</TableCell>
                             <TableCell align="right">Buy-Now Price</TableCell>
                             <TableCell align="right">Ends At</TableCell>
                             <TableCell>Status</TableCell>
@@ -44,7 +44,7 @@ export default function ListingsPage() {
                             onClick={() => nav(`/listings/${listing.listingId}`)}
                             >
                                 <TableCell>{listing.item.title}</TableCell>
-                                <TableCell align="right">{listing.startPrice}</TableCell>
+                                <TableCell align="right">{listing.latestBidAmount ?? listing.startPrice}</TableCell>
                                 <TableCell align="right">{listing.buyNowPrice}</TableCell>
                                 <TableCell align="right">
                                     {format(new Date(listing.endTime), 'dd/MM/yyyy HH:mm')}

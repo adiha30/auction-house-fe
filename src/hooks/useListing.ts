@@ -8,6 +8,7 @@ export interface Listing {
     startTime: string | null;
     endTime: string;
     finalPrice: number;
+    latestBidAmount?: number | null;
     item: {
         title: string;
         description: string;
