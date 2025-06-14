@@ -106,7 +106,6 @@ export function useNotifications() {
             onConnect: () => {
                 log("CONNECTED");
                 stomp.subscribe(`/topic/notifications/${userId}`, (m: IMessage) => {
-                    log("GOT", m.body);
                     try {
                         const notification = JSON.parse(m.body) as Notification;
                         enqueueSnackbar(notification.text, {
