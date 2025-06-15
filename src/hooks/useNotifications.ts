@@ -5,10 +5,25 @@ import {enqueueSnackbar} from "notistack";
 import {useEffect} from "react";
 import {Client, IMessage} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import {invalidateFromNotification} from "../utils/invalidateMap.ts";
+
+export enum NotificationType {
+    NEW_BID = "NEW_BID",
+    OUTBID = "OUTBID",
+    NEW_OFFER = "NEW_OFFER",
+    OFFER_ACCEPTED = "OFFER_ACCEPTED",
+    OFFER_REJECTED = "OFFER_REJECTED",
+    OFFER_WITHDRAWN = "OFFER_WITHDRAWN",
+    AUCTION_ENDED = "AUCTION_ENDED",
+    AUCTION_CREATED = "AUCTION_CREATED",
+    BOUGHT_OUT = "BOUGHT_OUT",
+    DISPUTE_OPENED = "DISPUTE_OPENED",
+    WATCHED_CHANGE = "WATCHED_CHANGE"
+}
 
 export interface Notification {
     notificationId: string;
-    type: string;
+    type: NotificationType;
     relatedUserId?: string | null;
     listingId?: string | null;
     text: string;
@@ -117,6 +132,8 @@ export function useNotifications() {
                             ["unreadCount", userId],
                             (old: number = 0) => old + 1
                         )
+
+                        invalidateFromNotification(notification, queryClient);
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
                     }

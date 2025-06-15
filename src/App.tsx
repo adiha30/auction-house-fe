@@ -11,29 +11,34 @@ import ListingDetailsPage from "./pages/ListingDetailsPage.tsx";
 import CreateListingCategoryPage from './pages/CreateListingCategoryPage';
 import CreateListingDetailsPage from './pages/CreateListingDetailPage.tsx';
 import HomePage from "./pages/HomePage.tsx";
+import {useBroadcastChannel} from "./hooks/useBroadcastChannel.ts";
 
 
-const App: React.FC = () => (
-    <BrowserRouter>
-        <NavBar/>
-        <Routes>
-            <Route path="/" element={<HomePage/>}/>
-            <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/register" element={<RegisterPage/>}/>
+const App: React.FC = () => {
+    useBroadcastChannel();
 
-            <Route path="/listings" element={<ListingsPage/>}/>
-            <Route path="/listings/:id" element={<ListingDetailsPage/>}/>
+    return (
+        <BrowserRouter>
+            <NavBar/>
+            <Routes>
+                <Route path="/" element={<HomePage/>}/>
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/register" element={<RegisterPage/>}/>
 
-            <Route element={<PrivateRoute/>}>
-                <Route path="/create" element={<CreateListingCategoryPage/>}/>
-                <Route path="/create/:category" element={<CreateListingDetailsPage/>}/>
-                <Route path="/dashboard" element={<Dashboard/>}/>
-                <Route path="/dashboard/edit" element={<EditProfilePage/>}/>
-            </Route>
+                <Route path="/listings" element={<ListingsPage/>}/>
+                <Route path="/listings/:id" element={<ListingDetailsPage/>}/>
 
-            <Route path="*" element={<Navigate to="/"/>}/>
-        </Routes>
-    </BrowserRouter>
-);
+                <Route element={<PrivateRoute/>}>
+                    <Route path="/create" element={<CreateListingCategoryPage/>}/>
+                    <Route path="/create/:category" element={<CreateListingDetailsPage/>}/>
+                    <Route path="/dashboard" element={<Dashboard/>}/>
+                    <Route path="/dashboard/edit" element={<EditProfilePage/>}/>
+                </Route>
+
+                <Route path="*" element={<Navigate to="/"/>}/>
+            </Routes>
+        </BrowserRouter>
+    )
+};
 
 export default App;

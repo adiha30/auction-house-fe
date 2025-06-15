@@ -67,7 +67,10 @@ export default function ListingDetailsPage() {
             error.message
             : 'Please check your connection and try again.';
         return (
-            <ErrorBlock message={msg} onRetry={() => qc.invalidateQueries({queryKey: ['listing', id]})}/>
+            <ErrorBlock message={msg} onRetry={() => {
+                qc.invalidateQueries({queryKey: ['listing', id]});
+                window.location.reload();
+            }}/>
         );
     }
     if (!listing) return <Typography mt={8}>Listing not found</Typography>;
@@ -277,6 +280,16 @@ function BidForm({
                         <Button variant="contained" type="submit" disabled={createBid.isPending || !isValid}>
                             Bid
                         </Button>
+                        {buyNowPrice && buyNowPrice > 0 && (
+                            <Button
+                                variant="outlined"
+                                color="success"
+                                onClick={() => createBid.mutate({amount: buyNowPrice, buy_now: true})}
+                                disabled={createBid.isPending}
+                            >
+                                Buy Now
+                            </Button>
+                        )}
                     </Stack>
                     <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
                         Minimum increment: ${minIncrement}
