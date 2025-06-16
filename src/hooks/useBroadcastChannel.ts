@@ -16,11 +16,9 @@ export const useBroadcastChannel = () => {
             debug: log,
             reconnectDelay: 5000,
             onConnect: () => {
-                log("Connected to broadcast channel");
                 stompClient.subscribe('/topic/notifications/broadcast', (message: IMessage) => {
                     try {
                         const notification = JSON.parse(message.body) as Notification;
-                        log("Received broadcast message:", notification);
 
                         invalidateFromNotification(notification, queryClient);
                     } catch (error) {

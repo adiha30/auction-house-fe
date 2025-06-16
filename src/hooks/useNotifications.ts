@@ -75,8 +75,6 @@ export function useNotifications() {
             const prevNotifs = queryClient.getQueryData<Notification[]>(["notifications", userId]);
             const prevUnread = queryClient.getQueryData<number>(["unreadCount", userId]);
 
-            console.info(prevNotifs);
-
             queryClient.setQueryData<Notification[]>(["notifications", userId], (old = []) =>
                 old.map((n) => (n.notificationId === id ? {...n, read: makeRead} : n))
             );
@@ -119,7 +117,6 @@ export function useNotifications() {
             debug: log,
             reconnectDelay: 0,
             onConnect: () => {
-                log("CONNECTED");
                 stomp.subscribe(`/topic/notifications/${userId}`, (m: IMessage) => {
                     try {
                         const notification = JSON.parse(m.body) as Notification;

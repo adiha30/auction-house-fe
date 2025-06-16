@@ -34,8 +34,6 @@ export function invalidateFromNotification(
 ) {
     const {type, listingId} = notification;
 
-    console.log("I'm here!!!", type, listingId);
-
     switch (type) {
         case NotificationType.NEW_BID:
         case NotificationType.OUTBID:
@@ -71,7 +69,6 @@ export function invalidateFromNotification(
 
         case NotificationType.AUCTION_ENDED:
         case NotificationType.BOUGHT_OUT:
-            console.log("I'm here!!!!")
             if (listingId) {
                 invalidateListingDetails(queryClient, listingId);
             }
@@ -82,12 +79,12 @@ export function invalidateFromNotification(
 
         case NotificationType.AUCTION_CREATED:
             invalidateListingLists(queryClient);
+
             break;
 
         case NotificationType.DISPUTE_OPENED:
         case NotificationType.WATCHED_CHANGE:
         default:
-            console.log("Sadly, I don't know how to handle this notification type yet: ", type);
             break;
     }
 }
