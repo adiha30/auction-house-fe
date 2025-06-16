@@ -22,6 +22,8 @@ export interface ListingDetails extends ListingSummary {
     category: string;
     seller: { userId: string; username: string };
     finalPrice: number;
+    buyNowPrice: number;
+    closingMethod: 'BUY_NOW' | 'BID' | 'OFFER_ACCEPTED' | 'EXPIRED' | null;
 }
 
 export interface CreateListingPayload {

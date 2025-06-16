@@ -87,7 +87,6 @@ export default function NotificationMenu() {
                                 onClick={() => {
                                     if (!notification.read) markToggle(notification.notificationId, true);
                                     if (notification.targetUrl) {
-                                        console.info("Navigating to listing:", notification);
                                         navigate(`${notification.targetUrl}`);
                                     }
                                     setAnchorEl(null);

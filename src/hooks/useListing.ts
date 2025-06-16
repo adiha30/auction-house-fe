@@ -33,7 +33,7 @@ export interface Listing {
 
 export function useListing(id: string) {
     return useQuery({
-        queryKey: ['listings', id],
+        queryKey: ['listing', id],
         queryFn: () => getListing(id),
         retry: 1
     });

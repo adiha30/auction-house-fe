@@ -5,10 +5,25 @@ import {enqueueSnackbar} from "notistack";
 import {useEffect} from "react";
 import {Client, IMessage} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import {invalidateFromNotification} from "../utils/invalidateMap.ts";
+
+export enum NotificationType {
+    NEW_BID = "NEW_BID",
+    OUTBID = "OUTBID",
+    NEW_OFFER = "NEW_OFFER",
+    OFFER_ACCEPTED = "OFFER_ACCEPTED",
+    OFFER_REJECTED = "OFFER_REJECTED",
+    OFFER_WITHDRAWN = "OFFER_WITHDRAWN",
+    AUCTION_ENDED = "AUCTION_ENDED",
+    AUCTION_CREATED = "AUCTION_CREATED",
+    BOUGHT_OUT = "BOUGHT_OUT",
+    DISPUTE_OPENED = "DISPUTE_OPENED",
+    WATCHED_CHANGE = "WATCHED_CHANGE"
+}
 
 export interface Notification {
     notificationId: string;
-    type: string;
+    type: NotificationType;
     relatedUserId?: string | null;
     listingId?: string | null;
     text: string;
@@ -60,8 +75,6 @@ export function useNotifications() {
             const prevNotifs = queryClient.getQueryData<Notification[]>(["notifications", userId]);
             const prevUnread = queryClient.getQueryData<number>(["unreadCount", userId]);
 
-            console.info(prevNotifs);
-
             queryClient.setQueryData<Notification[]>(["notifications", userId], (old = []) =>
                 old.map((n) => (n.notificationId === id ? {...n, read: makeRead} : n))
             );
@@ -104,9 +117,7 @@ export function useNotifications() {
             debug: log,
             reconnectDelay: 0,
             onConnect: () => {
-                log("CONNECTED");
                 stomp.subscribe(`/topic/notifications/${userId}`, (m: IMessage) => {
-                    log("GOT", m.body);
                     try {
                         const notification = JSON.parse(m.body) as Notification;
                         enqueueSnackbar(notification.text, {
@@ -118,6 +129,8 @@ export function useNotifications() {
                             ["unreadCount", userId],
                             (old: number = 0) => old + 1
                         )
+
+                        invalidateFromNotification(notification, queryClient);
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
                     }
