@@ -7,6 +7,8 @@ import {useNavigate} from 'react-router-dom';
 
 const schema = Yup.object({
     username: Yup.string().min(3).max(20).required(),
+    firstName: Yup.string().min(3).max(40).required(),
+    lastName: Yup.string().min(3).max(40).required(),
     email: Yup.string().email().required(),
     password: Yup.string().min(8).max(20).notRequired(),
     ccInfo: Yup.object({
@@ -28,6 +30,8 @@ export default function EditProfilePage() {
 
     const initial = {
         username: user.username,
+        firstName: user.firstName ?? '',
+        lastName: user.lastName ?? '',
         email: user.email,
         password: '',
         ccInfo: {
@@ -62,95 +66,124 @@ export default function EditProfilePage() {
 
     return (
         <Box mt={4} display="flex" justifyContent="center">
-            <Paper sx={{p: 4, width: 400}}>
-                <Typography variant="h5" mb={2}>Edit Profile</Typography>
-                <Formik initialValues={initial} validationSchema={schema} onSubmit={(values) => {
-                    const payload = {...values};
-                    if (!payload.password) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
-                        delete payload.password;
-                    }
+            <Paper sx={{ p: 4, width: 400 }}>
+                <Typography variant="h5" mb={2}>
+                    Edit Profile
+                </Typography>
 
-                    if (payload.ccInfo?.ccNumber) {
-                        // Remove formatting before submitting
-                        payload.ccInfo.ccNumber = payload.ccInfo.ccNumber.replace(/-/g, '');
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
-                        delete payload.ccInfo;
-                    }
+                <Formik
+                    initialValues={initial}
+                    validationSchema={schema}
+                    onSubmit={(values) => {
+                        const payload: Record<string, unknown> = { ...values };
 
-                    update.mutate(payload, {onSuccess: () => nav('/dashboard')});
-                }}
+                        if (!payload.password) delete payload.password;
+
+                        if (!payload.firstName) delete payload.firstName;
+                        if (!payload.lastName) delete payload.lastName;
+
+                        if (payload.ccInfo && typeof payload.ccInfo === 'object') {
+                            const cc = payload.ccInfo as Record<string, string>;
+                            if (cc.ccNumber) cc.ccNumber = cc.ccNumber.replace(/-/g, '');
+                            if (!cc.ccNumber && !cc.ccExpiry && !cc.ccCvc) delete payload.ccInfo;
+                        }
+
+                        update.mutate(payload, { onSuccess: () => nav('/dashboard') });
+                    }}
                 >
-                    {({errors, touched, values, setFieldValue}) => (
+                    {({ errors, touched, values, setFieldValue }) => (
                         <Form>
+                            {/* Username & names */}
                             <Field
                                 as={TextField}
-                                fullWidth margin="dense"
+                                fullWidth
+                                margin="dense"
                                 label="Username"
                                 name="username"
                                 error={touched.username && !!errors.username}
-                                helperText={touched.username && errors.username}
+                                helperText={touched.username && (errors.username as string)}
                             />
+
                             <Field
                                 as={TextField}
-                                fullWidth margin="dense"
+                                fullWidth
+                                margin="dense"
+                                label="First Name"
+                                name="firstName"
+                                error={touched.firstName && !!errors.firstName}
+                                helperText={touched.firstName && (errors.firstName as string)}
+                            />
+
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                margin="dense"
+                                label="Last Name"
+                                name="lastName"
+                                error={touched.lastName && !!errors.lastName}
+                                helperText={touched.lastName && (errors.lastName as string)}
+                            />
+
+                            {/* Email & password */}
+                            <Field
+                                as={TextField}
+                                fullWidth
+                                margin="dense"
                                 label="Email"
                                 name="email"
                                 error={touched.email && !!errors.email}
-                                helperText={touched.email && errors.email}
+                                helperText={touched.email && (errors.email as string)}
                             />
                             <Field
                                 as={TextField}
-                                fullWidth margin="dense"
+                                fullWidth
+                                margin="dense"
                                 label="Password"
                                 name="password"
                                 type="password"
                                 error={touched.password && !!errors.password}
-                                helperText={touched.password && errors.password}
+                                helperText={touched.password && (errors.password as string)}
                             />
+
+                            {/* Credit‑card inputs */}
                             <TextField
-                                fullWidth margin="dense"
+                                fullWidth
+                                margin="dense"
                                 label="Card Number"
                                 name="ccInfo.ccNumber"
                                 value={values.ccInfo?.ccNumber || ''}
-                                onChange={(e) => {
-                                    const formatted = formatCreditCard(e.target.value);
-                                    setFieldValue('ccInfo.ccNumber', formatted);
-                                }}
-                                slotProps={{htmlInput: {maxLength: 19}}}
-                                error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
-                                helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}
+                                onChange={(e) => setFieldValue('ccInfo.ccNumber', formatCreditCard(e.target.value))}
+                                inputProps={{ maxLength: 19 }}
+                                error={touched.ccInfo?.ccNumber && !!(errors as any).ccInfo?.ccNumber}
+                                helperText={touched.ccInfo?.ccNumber && (errors as any).ccInfo?.ccNumber}
                             />
                             <TextField
-                                fullWidth margin="dense"
-                                label="Expiration Date (MM/YY)"
+                                fullWidth
+                                margin="dense"
+                                label="Expiration (MM/YY)"
                                 name="ccInfo.ccExpiry"
                                 value={values.ccInfo?.ccExpiry || ''}
-                                onChange={(e) => {
-                                    const formatted = formatExpiryDate(e.target.value);
-                                    setFieldValue('ccInfo.ccExpiry', formatted);
-                                }}
-                                slotProps={{htmlInput: {maxLength: 5}}}
-                                error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
-                                helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}
+                                onChange={(e) => setFieldValue('ccInfo.ccExpiry', formatExpiryDate(e.target.value))}
+                                inputProps={{ maxLength: 5 }}
+                                error={touched.ccInfo?.ccExpiry && !!(errors as any).ccInfo?.ccExpiry}
+                                helperText={touched.ccInfo?.ccExpiry && (errors as any).ccInfo?.ccExpiry}
                             />
                             <Field
                                 as={TextField}
-                                fullWidth margin="dense"
+                                fullWidth
+                                margin="dense"
                                 label="CVC"
                                 name="ccInfo.ccCvc"
-                                inputProps={{maxLength: 4}}
-                                error={touched.ccInfo?.ccCvc && !!errors.ccInfo?.ccCvc}
-                                helperText={touched.ccInfo?.ccCvc && errors.ccInfo?.ccCvc}
+                                inputProps={{ maxLength: 4 }}
+                                error={touched.ccInfo?.ccCvc && !!(errors as any).ccInfo?.ccCvc}
+                                helperText={touched.ccInfo?.ccCvc && (errors as any).ccInfo?.ccCvc}
                             />
 
-                            <Button sx={{mt: 2}} variant="contained" type="submit" disabled={update.isPending}>
+                            {/* Actions */}
+                            <Button sx={{ mt: 2 }} variant="contained" type="submit" disabled={update.isPending}>
                                 Save
                             </Button>
-                            <Button sx={{mt: 2, ml: 2}} onClick={() => nav('/dashboard')}>
+                            <Button sx={{ mt: 2, ml: 2 }} onClick={() => nav('/dashboard')} disabled={update.isPending}>
                                 Cancel
                             </Button>
                         </Form>

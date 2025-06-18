@@ -10,6 +10,8 @@ export const updateUser = (id: string, body: Partial<User>) =>
 
 export interface User {
     userId: string;
+    firstName: string;
+    lastName: string;
     username: string;
     email: string;
     password?: string;

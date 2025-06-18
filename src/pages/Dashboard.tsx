@@ -50,12 +50,22 @@ export default function Dashboard() {
             <Paper sx={{p: 4, width: 400}}>
                 <Typography variant="h5" mb={2}>My Profile</Typography>
                 <Typography><b>Username:</b> {user.username}</Typography>
+                <Typography><b>First Name:</b> {user.firstName}</Typography>
+                <Typography><b>Last Name:</b> {user.lastName}</Typography>
                 <Typography><b>Email:</b> {user.email}</Typography>
                 <Typography><b>Role:</b> {user.role}</Typography>
                 {user.ccInfo?.ccNumber && (
                     <Typography><b>Card:</b> **** **** **** {user.ccInfo.ccNumber.slice(-4)}</Typography>
                 )}
             </Paper>
+
+            <Button
+              sx={{ mt: 2 }}
+              variant="contained"
+              onClick={() => nav('/dashboard/edit')}
+            >
+              Edit Profile
+            </Button>
 
             <Button
                 sx={{mt: 2}}
