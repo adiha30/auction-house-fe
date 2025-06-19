@@ -35,7 +35,6 @@ import {useAuth} from '../context/AuthContext';
 
 import {OfferRow} from '../components/OfferRow';
 import {useWithdrawOffer} from "../hooks/useWithdrawOffer";
-import {useState} from "react";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
@@ -98,9 +97,6 @@ export default function ListingDetailsPage() {
         } else if (closedWithBuyNow) {
             resultLabel = 'Buy-Now price:';
             resultAmount = listing.finalPrice ?? listing.buyNowPrice ?? highestBid;
-        } else if (listing.finalPrice == -1 || highestBid == -1){
-            resultLabel = 'No bids received';
-            resultAmount = 0;
         } else {
             resultLabel = 'Winning bid:';
             resultAmount = listing.finalPrice ?? highestBid;
@@ -140,7 +136,7 @@ export default function ListingDetailsPage() {
 
                     <Stack direction="row" spacing={4}>
                         <Typography>
-                            <b>{resultLabel}</b> {resultAmount != 0 ? `$${resultAmount}` : ''}
+                            <b>{resultLabel}</b> ${resultAmount}
                         </Typography>
                         {hasBuyNow && (
                             <Typography>
@@ -148,7 +144,7 @@ export default function ListingDetailsPage() {
                             </Typography>
                         )}
                         <Typography>
-                          <b>{timeLeft.includes('ago') ? 'Ended:' : 'Ends:'}</b> {timeLeft}
+                            <b>Ends:</b> {timeLeft}
                         </Typography>
                     </Stack>
 
@@ -311,20 +307,15 @@ function OfferForm({
     initialAmount: number;
     createOffer: ReturnType<typeof useCreateOffer>;
 }) {
-    const [cooldown, setCooldown] = useState(false);
-
     return (
         <Formik
             initialValues={{amount: initialAmount}}
             validationSchema={Yup.object({amount: Yup.number().min(1).required()})}
-            onSubmit={({amount}, {resetForm}) => {
-                setCooldown(true);
-                setTimeout(() => setCooldown(false), 3000);
-                return createOffer.mutate(amount, {onSuccess: () => resetForm()})
-            }
+            onSubmit={({amount}, {resetForm}) =>
+                createOffer.mutate(amount, {onSuccess: () => resetForm()})
             }
         >
-            {({errors, touched}) => (
+            {({errors, touched, isSubmitting}) => (
                 <Form>
                     <Stack direction="row" spacing={1} alignItems="flex-end" sx={{mb: 2}}>
                         <Field
@@ -340,7 +331,7 @@ function OfferForm({
                             variant="contained"
                             type="submit"
                             startIcon={<LocalOfferIcon/>}
-                            disabled={cooldown}
+                            disabled={isSubmitting}
                         >
                             Send Offer
                         </Button>
