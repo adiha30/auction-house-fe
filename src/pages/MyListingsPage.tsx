@@ -2,7 +2,6 @@ import React, {useMemo, useState} from "react";
 import {
     Avatar,
     Box,
-    Button,
     Card,
     CardContent,
     CardMedia,
@@ -18,6 +17,8 @@ import {
     Tab,
     Tabs,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
 } from "@mui/material";
 import {useQuery} from "@tanstack/react-query";
@@ -25,6 +26,10 @@ import {useNavigate} from "react-router-dom";
 import {getUserListings, getUserOpenListings, ListingDetails, uploadsPath,} from "../api/listingApi";
 import {API_URL} from "../api/config";
 import Grid from "@mui/material/Grid";
+import ViewListIcon from "@mui/icons-material/ViewList";
+import GridViewIcon from "@mui/icons-material/GridView";
+import SortIcon from "@mui/icons-material/Sort";
+import FilterListIcon from "@mui/icons-material/FilterList";
 
 enum ViewMode {
     LIST = "list",
@@ -239,99 +244,137 @@ const MyListingsPage: React.FC = () => {
                 <Tab label="Active"/>
                 <Tab label="Inactive"/>
             </Tabs>
-            <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2}}>
-                <FormControl size="small">
-                    <InputLabel>Sort By</InputLabel>
-                    <Select
-                        value={sortField}
-                        label="Sort By"
-                        onChange={(e) => setSortField(e.target.value as SortField)}
-                    >
-                        <MenuItem value={SortField.TITLE}>Title</MenuItem>
-                        <MenuItem value={SortField.BIDS}>Bids</MenuItem>
-                        {tab === 0 && <MenuItem value={SortField.TTL}>Time to Live</MenuItem>}
-                    </Select>
-                </FormControl>
-                <FormControl size="small">
-                    <InputLabel>Order</InputLabel>
-                    <Select
-                        value={sortOrder}
-                        label="Order"
-                        onChange={(e) => setSortOrder(e.target.value as SortOrder)}
-                    >
-                        <MenuItem value="asc">Ascending</MenuItem>
-                        <MenuItem value="desc">Descending</MenuItem>
-                    </Select>
-                </FormControl>
-                <FormControl size="small">
-                    <InputLabel>Bid Filter</InputLabel>
-                    <Select
-                        value={bidFilterType}
-                        label="Bid Filter"
-                        onChange={(e) => setBidFilterType(e.target.value as BidFilterType)}
-                    >
-                        <MenuItem value="above">Above</MenuItem>
-                        <MenuItem value="below">Below</MenuItem>
-                    </Select>
-                </FormControl>
-                <TextField
-                    size="small"
-                    label="Bids"
-                    type="number"
-                    value={bidFilterValue}
-                    onChange={(e) => setBidFilterValue(e.target.value === '' ? '' : Number(e.target.value))}
-                    sx={{width: 100}}
-                />
-                {tab === 1 && (
-                    <>
-                        <FormControl size="small">
-                            <InputLabel>Closing Method</InputLabel>
-                            <Select
-                                value={closingMethodFilter}
-                                label="Closing Method"
-                                onChange={(e) => setClosingMethodFilter(e.target.value)}
-                            >
-                                <MenuItem value="all">All</MenuItem>
-                                <MenuItem value="BUY_NOW">Buy Now</MenuItem>
-                                <MenuItem value="OFFER">Offer</MenuItem>
-                            </Select>
-                        </FormControl>
-                        <FormControl size="small">
-                            <InputLabel>Sold?</InputLabel>
-                            <Select
-                                value={soldFilter}
-                                label="Sold?"
-                                onChange={(e) => setSoldFilter(e.target.value)}
-                            >
-                                <MenuItem value="all">All</MenuItem>
-                                <MenuItem value="sold">Sold</MenuItem>
-                                <MenuItem value="not_sold">Not Sold</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </>
-                )}
-                <Box sx={{flexGrow: 1}}/>
-                <Box>
-                    <Button
-                        variant={viewMode === ViewMode.LIST ? 'contained' : 'outlined'}
-                        onClick={() => setViewMode(ViewMode.LIST)}
-                        sx={{mr: 1}}
-                    >
-                        List
-                    </Button>
-                    <Button
-                        variant={viewMode === ViewMode.GALLERY ? 'contained' : 'outlined'}
-                        onClick={() => setViewMode(ViewMode.GALLERY)}
-                    >
-                        Gallery
-                    </Button>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                    mt: 2,
+                    p: 1,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    boxShadow: 1,
+                    alignItems: 'center',
+                }}
+            >
+                {/* Sort Panel */}
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                    <SortIcon fontSize="small"/>
+                    <FormControl size="small">
+                        <InputLabel>Sort By</InputLabel>
+                        <Select
+                            value={sortField}
+                            onChange={(e) => setSortField(e.target.value as SortField)}
+                            label="Sort By"
+                        >
+                            <MenuItem value={SortField.TITLE}>Title</MenuItem>
+                            <MenuItem value={SortField.BIDS}>Bids</MenuItem>
+                            {tab === 0 && <MenuItem value={SortField.TTL}>Time left for listing</MenuItem>}
+                        </Select>
+                    </FormControl>
+                    <FormControl size="small">
+                        <InputLabel>Order</InputLabel>
+                        <Select
+                            value={sortOrder}
+                            onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                            label="Order"
+                        >
+                            <MenuItem value="asc">Ascending</MenuItem>
+                            <MenuItem value="desc">Descending</MenuItem>
+                        </Select>
+                    </FormControl>
                 </Box>
+
+                {/* Filter Panel */}
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                    <FilterListIcon fontSize="small"/>
+                    <FormControl size="small">
+                        <InputLabel># Of Bids</InputLabel>
+                        <Select
+                            value={bidFilterType}
+                            label="Filter Bids"
+                            onChange={(e) => setBidFilterType(e.target.value as BidFilterType)}
+                        >
+                            <MenuItem value="above">Above</MenuItem>
+                            <MenuItem value="below">Below</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        size="small"
+                        type="number"
+                        label="Number"
+                        value={bidFilterValue}
+                        onChange={(e) => setBidFilterValue(e.target.value === '' ? '' : Number(e.target.value))}
+                        sx={{width: 100}}
+                    />
+
+                    {tab === 1 && (
+                        <>
+                            <FormControl size="small">
+                                <InputLabel id="closing-method-label">Method</InputLabel>
+                                <Select
+                                    labelId="closing-method-label"
+                                    value={closingMethodFilter}
+                                    label="Method"
+                                    onChange={(e) => setClosingMethodFilter(e.target.value)}
+                                    sx={{width: 100}}
+                                >
+                                    <MenuItem value="all">All</MenuItem>
+                                    <MenuItem value="BUY_NOW">Buy Now</MenuItem>
+                                    <MenuItem value="OFFER">Offer</MenuItem>
+                                </Select>
+                            </FormControl>
+                            <FormControl size="small">
+                                <InputLabel>Sold?</InputLabel>
+                                <Select
+                                    value={soldFilter}
+                                    label="Sold?"
+                                    onChange={(e) => setSoldFilter(e.target.value)}
+                                >
+                                    <MenuItem value="all">All</MenuItem>
+                                    <MenuItem value="sold">Sold</MenuItem>
+                                    <MenuItem value="unsold">Unsold</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </>
+                    )}
+
+                    {/* Push view toggle to right */}
+                    <Box sx={{flexGrow: 1}}/>
+
+                    {/* View Mode Toggle */}
+                    <ToggleButtonGroup
+                        value={viewMode}
+                        exclusive
+                        onChange={(_, mode) => mode && setViewMode(mode)}
+                        size="small"
+                        aria-label="view mode"
+                        sx={{borderRadius: 1}}
+                    >
+                        <ToggleButton value={ViewMode.LIST} aria-label="list view">
+                            <ViewListIcon/>
+                        </ToggleButton>
+                        <ToggleButton value={ViewMode.GALLERY} aria-label="gallery view">
+                            <GridViewIcon/>
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
+
             </Box>
             <Box sx={{mt: 2}}>
                 {isLoading ? (
                     <CircularProgress/>
                 ) : isError ? (
                     <Typography color="error">Failed to load.</Typography>
+                ) : processedListings.length === 0 ? (
+                    <Box sx={{textAlign: 'center', mt: 4}}>
+                        <Typography variant="h6" color="textSecondary">
+                            Oops, looks like nothing’s here!
+                        </Typography>
+                        <Typography color="textSecondary">
+                            Try adjusting your filters or create a new listing.
+                        </Typography>
+                    </Box>
                 ) : viewMode === ViewMode.LIST ? (
                     renderList()
                 ) : (
