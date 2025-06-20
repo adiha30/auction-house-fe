@@ -35,6 +35,8 @@ import {useAuth} from '../context/AuthContext';
 
 import {OfferRow} from '../components/OfferRow';
 import {useWithdrawOffer} from "../hooks/useWithdrawOffer";
+import {toTitleCase} from "../utils/text.ts";
+import {useBuyNowConfirm} from "../hooks/useBuyNowConfirm.tsx";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
@@ -112,12 +114,12 @@ export default function ListingDetailsPage() {
                     component="img"
                     height="320"
                     image={listing.item.imageIds[0]}
-                    alt={listing.item.title}
+                    alt={toTitleCase(listing.item.title)}
                 />
 
                 <CardContent>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{mb: 1}}>
-                        <Typography variant="h4">{listing.item.title}</Typography>
+                        <Typography variant="h4">{toTitleCase(listing.item.title)}</Typography>
                         <IconButton
                             size="small"
                             onClick={() => toggle.mutate()}
@@ -248,55 +250,63 @@ function BidForm({
     buyNowPrice?: number;
     createBid: ReturnType<typeof useCreateBid>;
 }) {
+    const {ask, dialog} = useBuyNowConfirm();
+
     return (
-        <Formik
-            enableReinitialize
-            initialValues={{
-                amount: buyNowPrice
-                    ? Math.min(highestBid + minIncrement, buyNowPrice)
-                    : highestBid + minIncrement,
-            }}
-            validationSchema={Yup.object({
-                amount: Yup.number()
-                    .required()
-                    .test('min-or-buy-now', `Must be at least $${highestBid + minIncrement}`, value =>
-                        value === buyNowPrice || (value ?? 0) >= highestBid + minIncrement
-                    ),
-            })}
-            onSubmit={({amount}) => createBid.mutate({amount, buy_now: false})}
-        >
-            {({errors, touched, isValid}) => (
-                <Form>
-                    <Stack direction="row" spacing={1} alignItems="flex-end" sx={{mt: 3}}>
-                        <Field
-                            as={TextField}
-                            name="amount"
-                            type="number"
-                            size="small"
-                            placeholder={`${highestBid + minIncrement}`}
-                            error={touched.amount && !!errors.amount}
-                            helperText={touched.amount && errors.amount}
-                        />
-                        <Button variant="contained" type="submit" disabled={createBid.isPending || !isValid}>
-                            Bid
-                        </Button>
-                        {buyNowPrice && buyNowPrice > 0 && (
-                            <Button
-                                variant="outlined"
-                                color="success"
-                                onClick={() => createBid.mutate({amount: buyNowPrice, buy_now: true})}
-                                disabled={createBid.isPending}
-                            >
-                                Buy Now
+        <>
+            <Formik
+                enableReinitialize
+                initialValues={{
+                    amount: buyNowPrice
+                        ? Math.min(highestBid + minIncrement, buyNowPrice)
+                        : highestBid + minIncrement,
+                }}
+                validationSchema={Yup.object({
+                    amount: Yup.number()
+                        .required()
+                        .test('min-or-buy-now', `Must be at least $${highestBid + minIncrement}`, value =>
+                            value === buyNowPrice || (value ?? 0) >= highestBid + minIncrement
+                        ),
+                })}
+                onSubmit={({amount}) => createBid.mutate({amount, buy_now: false})}
+            >
+                {({errors, touched, isValid}) => (
+                    <Form>
+                        <Stack direction="row" spacing={1} alignItems="flex-end" sx={{mt: 3}}>
+                            <Field
+                                as={TextField}
+                                name="amount"
+                                type="number"
+                                size="small"
+                                placeholder={`${highestBid + minIncrement}`}
+                                error={touched.amount && !!errors.amount}
+                                helperText={touched.amount && errors.amount}
+                            />
+                            <Button variant="contained" type="submit" disabled={createBid.isPending || !isValid}>
+                                Bid
                             </Button>
-                        )}
-                    </Stack>
-                    <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
-                        Minimum increment: ${minIncrement}
-                    </Typography>
-                </Form>
-            )}
-        </Formik>
+                            {buyNowPrice && buyNowPrice > 0 && (
+                                <Button
+                                    variant="outlined"
+                                    color="success"
+                                    onClick={() => ask(
+                                        () => createBid.mutate({amount: buyNowPrice, buy_now: true}),
+                                        `$${buyNowPrice}`
+                                    )}
+                                    disabled={createBid.isPending}
+                                >
+                                    Buy Now
+                                </Button>
+                            )}
+                        </Stack>
+                        <Typography variant="caption" color="text.secondary" sx={{mt: 0.5}}>
+                            Minimum increment: ${minIncrement}
+                        </Typography>
+                    </Form>
+                )}
+            </Formik>
+            {dialog}
+        </>
     );
 }
 

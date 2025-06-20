@@ -26,8 +26,10 @@ export const useCreateBid = (listingId: string) => {
     return useMutation({
         mutationFn: (payload: Omit<CreateBidPayload, 'listingId'>) =>
             createBid({listingId, ...payload}),
-        onSuccess: () => {
-            enqueueSnackbar('Bid placed!', {variant: 'success'});
+        onSuccess: (_data, variables) => {
+            if (!(variables as Omit<CreateBidPayload, 'listingId'>).buy_now) {
+                enqueueSnackbar('Bid placed!', {variant: 'success'});
+            }
             invalidateListingQueries();
         },
         onError: (error: AxiosError<{ cause?: string }>) => {
