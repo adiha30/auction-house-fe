@@ -1,5 +1,6 @@
 import {useQuery} from '@tanstack/react-query'
 import {getListing} from "../api/listingApi.ts";
+import {Bid} from "./useBids.ts";
 
 export interface Listing {
     listingId: string;
@@ -17,6 +18,7 @@ export interface Listing {
     status: string;
     closingMethod: string | null;
     category: string;
+    bids: Bid[];
     winner: null | {
         userId: string;
         username: string;

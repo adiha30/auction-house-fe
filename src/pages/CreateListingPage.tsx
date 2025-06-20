@@ -144,15 +144,12 @@ export default function CreateListingPage({
                             categoryName: initialCategory,
                             endTime,
                             imageIds: imageIds,
+                            ...(buyNowPrice !== undefined && buyNowPrice !== '' && {buyNowPrice: Number(buyNowPrice)}),
                         };
 
-                        if (buyNowPrice !== undefined && buyNowPrice !== '') {
-                            // @ts-expect-error
-                            payload.buyNowPrice = Number(buyNowPrice);
-                        }
-
                         create.mutate(payload);
-                    }}
+                    }
+                    }
                 >
                     {({touched, errors, isValid}) => (
                         <Form>
@@ -259,7 +256,7 @@ export default function CreateListingPage({
                                             const uploadsEndpoint = `${API_URL}${uploadsPath}/`;
 
                                             return (
-                                                <Grid component="div" size={{xs: 4}} key={id}>
+                                                <Grid item key={id} xs={4}>
                                                     <Box sx={{position: 'relative'}}>
                                                         <img
                                                             src={`${uploadsEndpoint}${id}`}

@@ -17,7 +17,7 @@ export default function CreateListingCategoryPage() {
 
                 <Grid container spacing={2}>
                     {categories.map(category => (
-                        <Grid component="div" size={{xs: 4}} key={category}>
+                        <Grid item xs={4} key={category}>
                             <Paper sx={{p: 2, textAlign: 'center', cursor: 'pointer', '&:hover': {boxShadow: 6},}}
                                    onClick={() => nav(`/create/${encodeURIComponent(category)}`)}>
                                 {pretty(category)}

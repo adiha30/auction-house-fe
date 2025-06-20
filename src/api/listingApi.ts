@@ -1,5 +1,6 @@
 import api from './axios.ts'
 import {API_URL} from './config.ts';
+import {Bid} from "../hooks/useBids.ts";
 
 export const listingsPath = `/listings`;
 export const uploadsPath = `/uploads`;
@@ -13,13 +14,14 @@ export interface ListingSummary {
     status: 'OPEN' | 'SOLD' | 'CLOSED';
     finalPrice: number;
     latestBidAmount?: number | null;
+    item: ItemDto;
 }
 
 export interface ListingDetails extends ListingSummary {
-    item: ItemDto;
     description: string;
     imageIds: string[];
     category: string;
+    bids: Bid[];
     seller: { userId: string; username: string };
     finalPrice: number;
     buyNowPrice: number;
