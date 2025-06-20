@@ -120,7 +120,7 @@ export default function EditProfilePage() {
                                     const formatted = formatCreditCard(e.target.value);
                                     setFieldValue('ccInfo.ccNumber', formatted);
                                 }}
-                                slotProps={{htmlInput: {maxLength: 19}}}
+                                inputProps={{maxLength: 19}}
                                 error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
                                 helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}
                             />
@@ -133,7 +133,7 @@ export default function EditProfilePage() {
                                     const formatted = formatExpiryDate(e.target.value);
                                     setFieldValue('ccInfo.ccExpiry', formatted);
                                 }}
-                                slotProps={{htmlInput: {maxLength: 5}}}
+                                inputProps={{maxLength: 5}}
                                 error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
                                 helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}
                             />

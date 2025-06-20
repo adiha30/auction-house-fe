@@ -14,10 +14,10 @@ export interface ListingSummary {
     status: 'OPEN' | 'SOLD' | 'CLOSED';
     finalPrice: number;
     latestBidAmount?: number | null;
+    item: ItemDto;
 }
 
 export interface ListingDetails extends ListingSummary {
-    item: ItemDto;
     description: string;
     imageIds: string[];
     category: string;
