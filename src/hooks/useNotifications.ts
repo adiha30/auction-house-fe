@@ -123,6 +123,7 @@ export function useNotifications() {
                         enqueueSnackbar(notification.text, {
                             variant: "info",
                             anchorOrigin: {vertical: "bottom", horizontal: "left"},
+                            autoHideDuration: 5000,
                         });
                         queryClient.setQueryData<Notification[]>(["notifications", userId], (old = []) => [notification, ...old]);
                         queryClient.setQueryData(

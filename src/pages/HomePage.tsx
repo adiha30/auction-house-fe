@@ -8,6 +8,8 @@ import {getHotListings, ListingSummary} from "../api/listingApi.ts";
 import {pretty} from "./CreateListingPage.tsx";
 import {Box, Card, CardActionArea, CardContent, CircularProgress, Container, Typography,} from "@mui/material";
 import Grid from "@mui/material/Grid";
+import HeroCarousel from "../components/HeroCarousel.tsx";
+import {toTitleCase} from "../utils/text.ts";
 
 export default function HomePage() {
     const {token} = useAuth()!;
@@ -32,9 +34,12 @@ export default function HomePage() {
 
     if (!token) {
         return (
-            <Box textAlign="center" mt={8}>
-                <Typography variant="h3">Home</Typography>
-            </Box>
+            <>
+                <HeroCarousel />
+                <Box textAlign="center" mt={8}>
+                    <Typography variant="h3">Home</Typography>
+                </Box>
+            </>
         );
     }
 
@@ -43,10 +48,15 @@ export default function HomePage() {
     }
 
     return (
-        <Container sx={{mt: 4}}>
-            <Box textAlign="center" mb={4}>
-                <Typography variant="h4">Hello, {user?.username}</Typography>
+        <Container sx={{mt: 2}}>
+            <HeroCarousel />
+
+            <Box textAlign="center" mt={6} mb={4}>
+                <Typography variant="h4" fontWeight={600}>
+                    Hello {toTitleCase(user?.username ?? '')}
+                </Typography>
             </Box>
+
 
             {userListings && userListings.length > 0 && (
                 <Section title="My Listings" listings={userListings}/>

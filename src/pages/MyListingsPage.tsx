@@ -30,6 +30,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import GridViewIcon from "@mui/icons-material/GridView";
 import SortIcon from "@mui/icons-material/Sort";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import {toTitleCase} from "../utils/text.ts";
 
 enum ViewMode {
     LIST = "list",
@@ -99,6 +100,8 @@ const MyListingsPage: React.FC = () => {
         }
 
         if (tab === 1) {
+            arr = arr.filter(l => l.status !== 'OPEN');
+
             if (closingMethodFilter !== "all") {
                 arr = arr.filter((l) => l.closingMethod === closingMethodFilter);
             }
@@ -163,7 +166,7 @@ const MyListingsPage: React.FC = () => {
                             />
                         </ListItemAvatar>
                         <ListItemText
-                            primary={l.item.title}
+                            primary={toTitleCase(l.item.title)}
                             secondary={`Bids: ${l.bids?.length ?? 0}, Status: ${l.status}`}
                         />
                     </ListItemButton>
@@ -205,14 +208,14 @@ const MyListingsPage: React.FC = () => {
                                     component="img"
                                     height={140}
                                     image={img}
-                                    alt={l.item.title}
+                                    alt={toTitleCase(l.item.title)}
                                     sx={{objectFit: 'cover'}}
                                 />
                             ) : (
                                 <Box sx={{width: '100%', height: 140, backgroundColor: 'grey.200'}}/>
                             )}
                             <CardContent sx={{overflow: 'hidden', flexGrow: 1}}>
-                                <Typography noWrap variant="h6">{l.item.title}</Typography>
+                                <Typography noWrap variant="h6">{toTitleCase(l.item.title)}</Typography>
                                 <Typography noWrap variant="body2">Bids: {l.bids?.length ?? 0}</Typography>
                                 {tab === 0 && (
                                     <Typography noWrap variant="body2">
@@ -320,8 +323,10 @@ const MyListingsPage: React.FC = () => {
                                     sx={{width: 100}}
                                 >
                                     <MenuItem value="all">All</MenuItem>
+                                    <MenuItem value="BID">Bid</MenuItem>
                                     <MenuItem value="BUY_NOW">Buy Now</MenuItem>
-                                    <MenuItem value="OFFER">Offer</MenuItem>
+                                    <MenuItem value="OFFER_ACCEPTED">Offer Accepted</MenuItem>
+                                    <MenuItem value="EXPIRED">Expired</MenuItem>
                                 </Select>
                             </FormControl>
                             <FormControl size="small">
