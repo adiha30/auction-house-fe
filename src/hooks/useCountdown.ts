@@ -1,19 +1,47 @@
-import {useEffect, useState} from "react";
+// src/hooks/useCountdown.ts
+import {useEffect, useState} from 'react';
 
-export function useCountdown(targetIso: string) {
-    const [remaining, setRemaining] = useState<number>(() => new Date(targetIso).getTime() - Date.now());
+function pad(num: number, len = 2) {
+    return num.toString().padStart(len, '0');
+}
+
+export interface Countdown {
+    days: string;
+    hours: string;
+    minutes: string;
+    seconds: string;
+    finished: boolean;
+}
+
+export function useCountdown(isoEnd: string): Countdown {
+    const [now, setNow] = useState(Date.now());
 
     useEffect(() => {
-        const id = setInterval(() => setRemaining(new Date(targetIso).getTime() - Date.now()), 1_000);
-        return () => clearInterval(id);
-    }, [targetIso]);
+        if (!isoEnd) return;
 
-    const total = Math.max(remaining, 0);
-    const seconds = Math.floor((total / 1000) % 60);
-    const minutes = Math.floor((total / (1000 * 60)) % 60);
-    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(total / (1000 * 60 * 60 * 24));
-    const isUrgent = total > 0 && total <= 3_600_000;
+        const drift = 1000 - (Date.now() % 1000);
+        const timeout = setTimeout(() => {
+            setNow(Date.now());
+            const id = setInterval(() => setNow(Date.now()), 1000);
+            return () => clearInterval(id);
+        }, drift);
 
-    return { days, hours, minutes, seconds, isExpired: total <= 0, isUrgent };
+        return () => clearTimeout(timeout);
+    }, [isoEnd]);
+
+    const diff = Math.max(new Date(isoEnd).getTime() - now, 0);
+    const s = Math.floor(diff / 1000);
+
+    const days = Math.floor(s / 86400);
+    const hours = Math.floor((s % 86400) / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const seconds = s % 60;
+
+    return {
+        days: pad(days, 2),
+        hours: pad(hours, 2),
+        minutes: pad(minutes, 2),
+        seconds: pad(seconds, 2),
+        finished: diff === 0,
+    };
 }

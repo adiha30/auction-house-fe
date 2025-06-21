@@ -36,33 +36,37 @@ import {useWithdrawOffer} from '../hooks/useWithdrawOffer';
 import {toTitleCase} from '../utils/text';
 import {useBuyNowConfirm} from '../hooks/useBuyNowConfirm';
 import {useMemo, useState} from 'react';
+import {useCountdown} from '../hooks/useCountdown';
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
     const {id} = useParams<{ id: string }>();
     const {token, userId} = useAuth()!;
+
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
     const {data: bids = [], isLoading: bidsLoading, error: bidsError} = useBids(id!);
+
+    // countdown hook must run on every render
+    const countdown = useCountdown(listing?.endTime ?? '');
+
     const isSeller = listing?.seller.userId === userId;
     const wantOffers = isSeller || !!userId;
     const {data: offers = [], isLoading: offersLoading} = useOffers(id!, wantOffers);
+
     const STATUS_RANK = (s: string) => (s === 'PENDING' ? 0 : s === 'ACCEPTED' ? 1 : 2);
-    const sortedOffers = useMemo(
-        () =>
-            offers
-                .slice()
-                .sort((a, b) => {
-                    const byStatus = STATUS_RANK(a.status) - STATUS_RANK(b.status);
-                    return byStatus !== 0 ? byStatus : b.amount - a.amount;
-                }),
-        [offers],
-    );
+    const sortedOffers = useMemo(() =>
+        offers.slice().sort((a, b) => {
+            const byStatus = STATUS_RANK(a.status) - STATUS_RANK(b.status);
+            return byStatus !== 0 ? byStatus : b.amount - a.amount;
+        }), [offers]);
+
     const [sellerShown, setSellerShown] = useState(5);
     const [mineShown, setMineShown] = useState(5);
     const sellerOffers = sortedOffers.slice(0, sellerShown);
     const mySortedOffers = useMemo(() => sortedOffers.filter(o => o.offerorId === userId), [sortedOffers, userId]);
     const myOffersVisible = mySortedOffers.slice(0, mineShown);
+
     const createBid = useCreateBid(id!);
     const createOffer = useCreateOffer(id!);
     const acceptOffer = useAcceptOffer(id!);
@@ -78,15 +82,10 @@ export default function ListingDetailsPage() {
             (error.response?.data as { cause?: string; message?: string })?.message ??
             error.message
             : 'Please check your connection and try again.';
-        return (
-            <ErrorBlock
-                message={msg}
-                onRetry={() => {
-                    qc.invalidateQueries({queryKey: ['listing', id]});
-                    window.location.reload();
-                }}
-            />
-        );
+        return <ErrorBlock message={msg} onRetry={() => {
+            void qc.invalidateQueries({queryKey: ['listing', id]});
+            window.location.reload();
+        }}/>;
     }
 
     if (!listing) return <Typography mt={8}>Listing not found</Typography>;
@@ -96,10 +95,12 @@ export default function ListingDetailsPage() {
     const minIncrement = meta?.minBidIncrement ?? 1;
     const hasBuyNow = (listing.buyNowPrice ?? 0) > 0;
     const offersAllowed = !hasBuyNow;
-    const timeLeft = formatDistanceToNow(new Date(listing.endTime), {addSuffix: true});
+    const timeSinceEnd = formatDistanceToNow(new Date(listing.endTime), {addSuffix: true});
+
     const acceptedOffer = offers.find(o => o.status === 'ACCEPTED');
     const closedWithOffer = listing.closingMethod === 'OFFER_ACCEPTED' || !!acceptedOffer;
     const closedWithBuyNow = listing.closingMethod === 'BUY_NOW';
+
     let resultLabel = 'Highest current bid:';
     let resultAmount = highestBid;
 
@@ -135,7 +136,7 @@ export default function ListingDetailsPage() {
                         {listing.category} · {listing.status}
                     </Typography>
                     <Typography sx={{my: 2}}>{listing.item.description}</Typography>
-                    <Stack direction="row" spacing={4}>
+                    <Stack direction="row" spacing={4} alignItems="center">
                         <Typography>
                             <b>{resultLabel}</b> ${resultAmount}
                         </Typography>
@@ -144,11 +145,28 @@ export default function ListingDetailsPage() {
                                 <b>Buy-Now:</b> ${listing.buyNowPrice}
                             </Typography>
                         )}
-                        <Typography>
-                            <b>Ends:</b> {timeLeft}
-                        </Typography>
+                        {listing.status === 'OPEN' ? (
+                            <Typography
+                                sx={{
+                                    fontVariantNumeric: 'tabular-nums',
+                                    minWidth: '180px',
+                                    textAlign: 'right',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <b>Ends&nbsp;in:</b>&nbsp;
+                                {countdown.days}d&nbsp;
+                                {countdown.hours}h&nbsp;
+                                {countdown.minutes}m&nbsp;
+                                {countdown.seconds}s
+                            </Typography>
+                        ) : (
+                            <Typography>
+                                <b>Ended:</b> {timeSinceEnd}
+                            </Typography>
+                        )}
                     </Stack>
-                    {listing.status === 'OPEN' && token && (
+                    {listing.status === 'OPEN' && token && !isSeller && (
                         <BidForm highestBid={highestBid} minIncrement={minIncrement} buyNowPrice={listing.buyNowPrice}
                                  createBid={createBid}/>
                     )}
@@ -309,12 +327,12 @@ function OfferForm({
             validationSchema={Yup.object({amount: Yup.number().min(1).required()})}
             onSubmit={({amount}, {resetForm}) => createOffer.mutate(amount, {onSuccess: () => resetForm()})}
         >
-            {({errors, touched}) => (
+            {({errors, touched, isSubmitting}) => (
                 <Form>
                     <Stack direction="row" spacing={1} alignItems="flex-end" sx={{mb: 2}}>
                         <Field as={TextField} name="amount" type="number" label="Your offer ($)" size="small"
                                error={touched.amount && !!errors.amount} helperText={touched.amount && errors.amount}/>
-                        <Button variant="contained" type="submit" startIcon={<LocalOfferIcon/>} disabled={createOffer.isPending}>
+                        <Button variant="contained" type="submit" startIcon={<LocalOfferIcon/>} disabled={isSubmitting}>
                             Send Offer
                         </Button>
                     </Stack>
