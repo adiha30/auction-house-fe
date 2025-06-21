@@ -11,6 +11,7 @@ export interface Countdown {
     minutes: string;
     seconds: string;
     finished: boolean;
+    isUrgent: boolean;
 }
 
 export function useCountdown(isoEnd: string): Countdown {
@@ -36,6 +37,7 @@ export function useCountdown(isoEnd: string): Countdown {
     const hours = Math.floor((s % 86400) / 3600);
     const minutes = Math.floor((s % 3600) / 60);
     const seconds = s % 60;
+    const isUrgent = diff < 1000 * 60 * 60;
 
     return {
         days: pad(days, 2),
@@ -43,5 +45,6 @@ export function useCountdown(isoEnd: string): Countdown {
         minutes: pad(minutes, 2),
         seconds: pad(seconds, 2),
         finished: diff === 0,
+        isUrgent: isUrgent,
     };
 }

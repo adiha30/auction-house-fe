@@ -14,6 +14,22 @@ export interface Bid {
     listing: ListingSummary;
 }
 
+export interface ActiveBid {
+    bidId: string;
+    amount: number;
+    isBuyNow: boolean;
+    createdAt: string;
+    // listing snapshot -----------------------------
+    listingId: string;
+    title: string;
+    startPrice: number;
+    latestBidAmount?: number | null;
+    buyNowPrice?: number | null;
+    endTime: string;
+    status: 'OPEN' | 'SOLD' | 'CLOSED';
+}
+
+
 export const useBids = (listingId: string, enabled = true) =>
     useQuery<Bid[]>({
         queryKey: ['bids', listingId],
