@@ -10,6 +10,9 @@ import {Box, Card, CardActionArea, CardContent, CircularProgress, Container, Typ
 import Grid from "@mui/material/Grid";
 import HeroCarousel from "../components/HeroCarousel.tsx";
 import {toTitleCase} from "../utils/text.ts";
+import {useMyActiveBids} from "../hooks/useMyActiveBids.ts";
+import {RefObject, useRef} from "react";
+import QuickAccessBar from "../components/QuickAccessBar.tsx";
 
 export default function HomePage() {
     const {token} = useAuth()!;
@@ -21,6 +24,12 @@ export default function HomePage() {
         enabled: !!token,
     });
     const {data: categories = []} = useCategories();
+    const { data: activeBids = [] } = useMyActiveBids(!!token);
+
+    const bidsRef = useRef<HTMLDivElement | null>(null);
+    const watchRef = useRef<HTMLDivElement | null>(null);
+    const scrollTo = (ref: RefObject<HTMLDivElement | null>) =>
+        ref.current?.scrollIntoView({behavior: "smooth"});
 
     // fire off one hot-listings query per category
     const featuredQueries = useQueries({
@@ -47,23 +56,43 @@ export default function HomePage() {
         return <CircularProgress sx={{mt: 8}}/>;
     }
 
+    const areWatches = watches && watches.length > 0;
+    const areBids = activeBids && activeBids.length > 0;
+
     return (
         <Container sx={{mt: 2}}>
             <HeroCarousel />
 
-            <Box textAlign="center" mt={6} mb={4}>
+            <Box textAlign="center" mt={4}>
                 <Typography variant="h4" fontWeight={600}>
-                    Hello {toTitleCase(user?.username ?? '')}
+                    {`Welcome back, ${toTitleCase(user?.username ?? "")}! Ready to win today?`}
                 </Typography>
+
+                <QuickAccessBar
+                    onViewBids={() => scrollTo(bidsRef)}
+                    areBids={areBids}
+                    onWatchlist={() => scrollTo(watchRef)}
+                    areWatches={areWatches}
+                />
             </Box>
 
 
-            {userListings && userListings.length > 0 && (
-                <Section title="My Listings" listings={userListings}/>
+            {areBids && (
+                <div ref={bidsRef}>
+                    <Section
+                        title={"My Active Bids"}
+                        listings={activeBids} />
+                </div>
             )}
 
-            {watches && watches.length > 0 && (
-                <Section title="My Watched Listings" listings={watches}/>
+            {userListings && userListings.length > 0 && (
+                <Section title={"My Listings"} listings={userListings} />
+            )}
+
+            {areWatches && (
+                <div ref={watchRef}>
+                    <Section title="My Watched Listings" listings={watches}/>
+                </div>
             )}
 
             {featuredQueries.map((q, idx) => {
