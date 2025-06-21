@@ -1,5 +1,6 @@
 import {useQuery} from '@tanstack/react-query';
 import api from '../api/axios';
+import {ListingSummary} from "../api/listingApi.ts";
 
 export interface Bid {
     bidId: string;
@@ -10,6 +11,7 @@ export interface Bid {
         userId: string;
         username: string;
     };
+    listing: ListingSummary;
 }
 
 export const useBids = (listingId: string, enabled = true) =>
