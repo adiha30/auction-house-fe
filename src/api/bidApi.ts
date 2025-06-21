@@ -1,5 +1,5 @@
 import api from './axios';
-import {Bid} from "../hooks/useBids.ts";
+import {ActiveBid} from "../hooks/useBids.ts";
 
 export interface CreateBidPayload {
     listingId: string;
@@ -11,4 +11,4 @@ export const createBid = (body: CreateBidPayload) =>
     api.post<void | { cause: string }>('/bids', body).then(r => r.data);
 
 export const getMyActiveBids = () =>
-    api.get<Bid[]>('/bids/user/active').then(r => r.data);
+    api.get<ActiveBid[]>('/bids/user/active').then(r => r.data);

@@ -11,41 +11,41 @@ import {
     Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { RefObject, useRef } from 'react';
-import { useQueries, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import {RefObject, useRef} from 'react';
+import {useQueries, useQuery} from '@tanstack/react-query';
+import {useNavigate} from 'react-router-dom';
 
-import { useAuth } from '../context/AuthContext';
-import { useCurrentUser } from '../hooks/useCurrentUser';
-import { useUserListings } from '../hooks/useUserListings';
-import { useCategories } from '../hooks/useCategories';
-import { getMyWatches } from '../api/watchApi';
-import { getHotListings, ListingSummary } from '../api/listingApi';
-import { useMyActiveBids } from '../hooks/useMyActiveBids';
-import { Bid } from '../hooks/useBids';
+import {useAuth} from '../context/AuthContext';
+import {useCurrentUser} from '../hooks/useCurrentUser';
+import {useUserListings} from '../hooks/useUserListings';
+import {useCategories} from '../hooks/useCategories';
+import {getMyWatches} from '../api/watchApi';
+import {getHotListings, ListingSummary} from '../api/listingApi';
+import {useMyActiveBids} from '../hooks/useMyActiveBids';
+import {ActiveBid} from '../hooks/useBids';
 
-import { pretty } from './CreateListingPage';
+import {pretty} from './CreateListingPage';
 import HeroCarousel from '../components/HeroCarousel';
 import CategoriesShowcase from '../components/CategoriesShowcase';
 import QuickAccessBar from '../components/QuickAccessBar';
-import { toTitleCase } from '../utils/text';
+import {toTitleCase} from '../utils/text';
 
 export default function HomePage() {
-    const { token } = useAuth()!;
-    const { data: user, isLoading: userLoading } = useCurrentUser();
-    const { data: userListings, isLoading: listingsLoading } = useUserListings();
-    const { data: watches, isLoading: watchesLoading } = useQuery<ListingSummary[]>({
+    const {token} = useAuth()!;
+    const {data: user, isLoading: userLoading} = useCurrentUser();
+    const {data: userListings, isLoading: listingsLoading} = useUserListings();
+    const {data: watches, isLoading: watchesLoading} = useQuery<ListingSummary[]>({
         queryKey: ['myWatches'],
         queryFn: getMyWatches,
         enabled: !!token,
     });
-    const { data: categories = [] } = useCategories();
-    const { data: activeBids = [] } = useMyActiveBids(!!token);
+    const {data: categories = []} = useCategories();
+    const {data: activeBids = []} = useMyActiveBids(!!token);
 
     const bidsRef = useRef<HTMLDivElement | null>(null);
     const watchRef = useRef<HTMLDivElement | null>(null);
     const scrollTo = (ref: RefObject<HTMLDivElement | null>) =>
-        ref.current?.scrollIntoView({ behavior: 'smooth' });
+        ref.current?.scrollIntoView({behavior: 'smooth'});
 
     // one hot-listings query per category
     const featuredQueries = useQueries({
@@ -61,8 +61,8 @@ export default function HomePage() {
     if (!token) {
         return (
             <>
-                <HeroCarousel />
-                <CategoriesShowcase />
+                <HeroCarousel/>
+                <CategoriesShowcase/>
                 <Box textAlign="center" mt={8}>
                     <Typography variant="h3">Home</Typography>
                 </Box>
@@ -72,16 +72,16 @@ export default function HomePage() {
 
     /* ---------- loading ---------- */
     if (userLoading || listingsLoading || watchesLoading) {
-        return <CircularProgress sx={{ mt: 8 }} />;
+        return <CircularProgress sx={{mt: 8}}/>;
     }
 
     const areWatches = !!watches?.length;
     const areBids = !!activeBids?.length;
 
     return (
-        <Container sx={{ mt: 2 }}>
-            <HeroCarousel />
-            <CategoriesShowcase />
+        <Container sx={{mt: 2}}>
+            <HeroCarousel/>
+            <CategoriesShowcase/>
 
             <Box textAlign="center" mt={4}>
                 <Typography variant="h4" fontWeight={600}>
@@ -99,17 +99,17 @@ export default function HomePage() {
             {/* ---------- active bids ---------- */}
             {areBids && (
                 <div ref={bidsRef}>
-                    <ActiveBidsSection bids={activeBids} />
+                    <ActiveBidsSection bids={activeBids}/>
                 </div>
             )}
 
             {/* ---------- my listings ---------- */}
-            {!!userListings?.length && <Section title="My Listings" listings={userListings} />}
+            {!!userListings?.length && <Section title="My Listings" listings={userListings}/>}
 
             {/* ---------- watchlist ---------- */}
             {areWatches && (
                 <div ref={watchRef}>
-                    <Section title="My Watched Listings" listings={watches!} />
+                    <Section title="My Watched Listings" listings={watches!}/>
                 </div>
             )}
 
@@ -118,79 +118,61 @@ export default function HomePage() {
                 const cat = categories[idx];
                 if (q.isLoading || !q.data?.length) return null;
                 return (
-                    <Section key={cat} title={`🔥 Hot in ${pretty(cat)}`} listings={q.data} />
+                    <Section key={cat} title={`🔥 Hot in ${pretty(cat)}`} listings={q.data}/>
                 );
             })}
         </Container>
     );
 }
 
-/* -------------------------------------------------------------------------- */
-/*                               Helper components                            */
-/* -------------------------------------------------------------------------- */
 
-function ActiveBidsSection({ bids }: { bids: Bid[] }) {
+function ActiveBidsSection({ bids }: { bids: ActiveBid[] }) {
     const nav = useNavigate();
 
-    // keep only the user’s latest / highest bid per listing
-    const byListing = new Map<
-        string,
-        { listing: ListingSummary; myBid: Bid; leading: boolean }
-    >();
+    const byListing = new Map<string, ActiveBid>();
 
-    bids.forEach((bid) => {
-        if (!bid.listing) return;
-        const current = byListing.get(bid.listing.listingId);
-        if (!current || bid.amount > current.myBid.amount) {
-            byListing.set(bid.listing.listingId, {
-                listing: bid.listing as unknown as ListingSummary,
-                myBid: bid,
-                leading: bid.amount === (bid.listing.latestBidAmount ?? bid.listing.startPrice),
-            });
-        }
+    bids.forEach(bid => {
+        const prev = byListing.get(bid.listingId);
+        if (!prev || bid.amount > prev.amount) byListing.set(bid.listingId, bid);
     });
-
-    const entries = Array.from(byListing.values());
 
     return (
         <Box mb={6}>
-            <Typography variant="h5" gutterBottom>
-                My Active Bids
-            </Typography>
-
+            <Typography variant="h5" gutterBottom>My Active Bids</Typography>
             <Grid container spacing={2}>
-                {entries.map(({ listing, myBid, leading }) => (
-                    <Grid item key={listing.listingId} xs={12} sm={6} md={3}>
-                        <Card>
-                            <CardActionArea onClick={() => nav(`/listings/${listing.listingId}`)}>
-                                <CardContent>
-                                    <Typography noWrap>{listing.title || listing.item?.title}</Typography>
-
-                                    <Stack direction="row" spacing={1} alignItems="center" mt={0.5}>
+                {Array.from(byListing.values()).map(bid => {
+                    const leading = bid.amount === (bid.latestBidAmount ?? bid.startPrice);
+                    return (
+                        <Grid item key={bid.listingId} xs={12} sm={6} md={3}>
+                            <Card>
+                                <CardActionArea onClick={() => nav(`/listings/${bid.listingId}`)}>
+                                    <CardContent>
+                                        <Typography noWrap>{bid.title}</Typography>
+                                        <Stack direction="row" spacing={1} mt={0.5}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Your bid:&nbsp;${bid.amount}
+                                            </Typography>
+                                            <Chip size="small"
+                                                  label={leading ? 'Leading' : 'Outbid'}
+                                                  color={leading ? 'success' : 'error'} />
+                                        </Stack>
                                         <Typography variant="body2" color="text.secondary">
-                                            Your bid:&nbsp;${myBid.amount}
+                                            Ends {new Date(bid.endTime).toLocaleDateString()}
                                         </Typography>
-                                        <Chip
-                                            size="small"
-                                            label={leading ? 'Leading' : 'Outbid'}
-                                            color={leading ? 'success' : 'error'}
-                                        />
-                                    </Stack>
-
-                                    <Typography variant="body2" color="text.secondary">
-                                        Ends {new Date(listing.endTime).toLocaleDateString()}
-                                    </Typography>
-                                </CardContent>
-                            </CardActionArea>
-                        </Card>
-                    </Grid>
-                ))}
+                                    </CardContent>
+                                </CardActionArea>
+                            </Card>
+                        </Grid>
+                    );
+                })}
             </Grid>
         </Box>
     );
 }
 
-function Section({ title, listings }: { title: string; listings: any[] }) {
+
+
+function Section({title, listings}: { title: string; listings: any[] }) {
     const nav = useNavigate();
 
     return (
