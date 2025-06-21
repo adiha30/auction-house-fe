@@ -20,9 +20,8 @@ import {formatDistanceToNow} from 'date-fns';
 import {useParams} from 'react-router-dom';
 import {isAxiosError} from 'axios';
 import {useQueryClient} from '@tanstack/react-query';
-
 import {useListing} from '../hooks/useListing';
-import type {Bid} from '../hooks/useBids'
+import type {Bid} from '../hooks/useBids';
 import {useBids} from '../hooks/useBids';
 import {useOffers} from '../hooks/useOffers';
 import {useWatch} from '../hooks/useWatch';
@@ -32,11 +31,12 @@ import {useAcceptOffer} from '../hooks/useAcceptOffer';
 import {useRejectOffer} from '../hooks/useRejectOffer';
 import {useCategoryMetadata} from '../hooks/useCategoryMetadata';
 import {useAuth} from '../context/AuthContext';
-
 import {OfferRow} from '../components/OfferRow';
-import {useWithdrawOffer} from "../hooks/useWithdrawOffer";
-import {toTitleCase} from "../utils/text.ts";
-import {useBuyNowConfirm} from "../hooks/useBuyNowConfirm.tsx";
+import {useWithdrawOffer} from '../hooks/useWithdrawOffer';
+import {toTitleCase} from '../utils/text';
+import {useBuyNowConfirm} from '../hooks/useBuyNowConfirm';
+import {useMemo, useState} from 'react';
+import {useCountdown} from '../hooks/useCountdown';
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
@@ -45,36 +45,49 @@ export default function ListingDetailsPage() {
 
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
-    const {data: bids = [], isLoading: bidsLoading, error: bidsError} =
-        useBids(id!);
+    const {data: bids = [], isLoading: bidsLoading, error: bidsError} = useBids(id!);
+
+    // countdown hook must run on every render
+    const countdown = useCountdown(listing?.endTime ?? '');
 
     const isSeller = listing?.seller.userId === userId;
     const wantOffers = isSeller || !!userId;
-    const {data: offers = [], isLoading: offersLoading} =
-        useOffers(id!, wantOffers);
+    const {data: offers = [], isLoading: offersLoading} = useOffers(id!, wantOffers);
+
+    const STATUS_RANK = (s: string) => (s === 'PENDING' ? 0 : s === 'ACCEPTED' ? 1 : 2);
+    const sortedOffers = useMemo(() =>
+        offers.slice().sort((a, b) => {
+            const byStatus = STATUS_RANK(a.status) - STATUS_RANK(b.status);
+            return byStatus !== 0 ? byStatus : b.amount - a.amount;
+        }), [offers]);
+
+    const [sellerShown, setSellerShown] = useState(5);
+    const [mineShown, setMineShown] = useState(5);
+    const sellerOffers = sortedOffers.slice(0, sellerShown);
+    const mySortedOffers = useMemo(() => sortedOffers.filter(o => o.offerorId === userId), [sortedOffers, userId]);
+    const myOffersVisible = mySortedOffers.slice(0, mineShown);
 
     const createBid = useCreateBid(id!);
     const createOffer = useCreateOffer(id!);
     const acceptOffer = useAcceptOffer(id!);
     const rejectOffer = useRejectOffer(id!);
     const withdrawOffer = useWithdrawOffer(id!);
-
     const {watching, toggle} = useWatch(id!);
 
     if (isLoading) return <CircularProgress sx={{mt: 8}}/>;
+
     if (error) {
         const msg = isAxiosError(error)
             ? (error.response?.data as { cause?: string; message?: string })?.cause ??
             (error.response?.data as { cause?: string; message?: string })?.message ??
             error.message
             : 'Please check your connection and try again.';
-        return (
-            <ErrorBlock message={msg} onRetry={() => {
-                qc.invalidateQueries({queryKey: ['listing', id]});
-                window.location.reload();
-            }}/>
-        );
+        return <ErrorBlock message={msg} onRetry={() => {
+            void qc.invalidateQueries({queryKey: ['listing', id]});
+            window.location.reload();
+        }}/>;
     }
+
     if (!listing) return <Typography mt={8}>Listing not found</Typography>;
 
     const sortedBids = [...bids].sort((a, b) => b.amount - a.amount);
@@ -82,11 +95,10 @@ export default function ListingDetailsPage() {
     const minIncrement = meta?.minBidIncrement ?? 1;
     const hasBuyNow = (listing.buyNowPrice ?? 0) > 0;
     const offersAllowed = !hasBuyNow;
-    const timeLeft = formatDistanceToNow(new Date(listing.endTime), {addSuffix: true});
+    const timeSinceEnd = formatDistanceToNow(new Date(listing.endTime), {addSuffix: true});
 
     const acceptedOffer = offers.find(o => o.status === 'ACCEPTED');
-    const closedWithOffer =
-        listing.closingMethod === 'OFFER_ACCEPTED' || !!acceptedOffer;
+    const closedWithOffer = listing.closingMethod === 'OFFER_ACCEPTED' || !!acceptedOffer;
     const closedWithBuyNow = listing.closingMethod === 'BUY_NOW';
 
     let resultLabel = 'Highest current bid:';
@@ -105,38 +117,26 @@ export default function ListingDetailsPage() {
         }
     }
 
-    const myOffers = offers.filter(o => o.offerorId === userId);
-
     return (
         <Box mt={4} display="flex" justifyContent="center">
             <Card sx={{maxWidth: 800, p: 2}}>
-                <CardMedia
-                    component="img"
-                    height="320"
-                    image={listing.item.imageIds[0]}
-                    alt={toTitleCase(listing.item.title)}
-                />
-
+                <CardMedia component="img" height="320" image={listing.item.imageIds[0]}
+                           alt={toTitleCase(listing.item.title)}/>
                 <CardContent>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{mb: 1}}>
                         <Typography variant="h4">{toTitleCase(listing.item.title)}</Typography>
-                        <IconButton
-                            size="small"
-                            onClick={() => toggle.mutate()}
-                            disabled={toggle.isPending}
-                            title={watching ? 'Unwatch' : 'Watch'}
-                        >
-                            {watching ? <VisibilityOffIcon/> : <VisibilityIcon/>}
-                        </IconButton>
+                        {token && (
+                            <IconButton size="small" onClick={() => toggle.mutate()} disabled={toggle.isPending}
+                                        title={watching ? 'Unwatch' : 'Watch'}>
+                                {watching ? <VisibilityOffIcon/> : <VisibilityIcon/>}
+                            </IconButton>
+                        )}
                     </Stack>
-
                     <Typography color="text.secondary" gutterBottom>
                         {listing.category} · {listing.status}
                     </Typography>
-
                     <Typography sx={{my: 2}}>{listing.item.description}</Typography>
-
-                    <Stack direction="row" spacing={4}>
+                    <Stack direction="row" spacing={4} alignItems="center">
                         <Typography>
                             <b>{resultLabel}</b> ${resultAmount}
                         </Typography>
@@ -145,35 +145,40 @@ export default function ListingDetailsPage() {
                                 <b>Buy-Now:</b> ${listing.buyNowPrice}
                             </Typography>
                         )}
-                        <Typography>
-                            <b>Ends:</b> {timeLeft}
-                        </Typography>
+                        {listing.status === 'OPEN' ? (
+                            <Typography
+                                sx={{
+                                    fontVariantNumeric: 'tabular-nums',
+                                    minWidth: '180px',
+                                    textAlign: 'right',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                <b>Ends&nbsp;in:</b>&nbsp;
+                                {countdown.days}d&nbsp;
+                                {countdown.hours}h&nbsp;
+                                {countdown.minutes}m&nbsp;
+                                {countdown.seconds}s
+                            </Typography>
+                        ) : (
+                            <Typography>
+                                <b>Ended:</b> {timeSinceEnd}
+                            </Typography>
+                        )}
                     </Stack>
-
-                    {listing.status === 'OPEN' && token && (
-                        <BidForm
-                            highestBid={highestBid}
-                            minIncrement={minIncrement}
-                            buyNowPrice={listing.buyNowPrice}
-                            createBid={createBid}
-                        />
+                    {listing.status === 'OPEN' && token && !isSeller && (
+                        <BidForm highestBid={highestBid} minIncrement={minIncrement} buyNowPrice={listing.buyNowPrice}
+                                 createBid={createBid}/>
                     )}
-
                     {offersAllowed && (
                         <>
                             <Divider sx={{my: 3}}/>
-
-                            {listing.status === 'OPEN' && token && !isSeller && (
-                                <OfferForm
-                                    initialAmount={highestBid + 1}
-                                    createOffer={createOffer}
-                                />
-                            )}
-
+                            {listing.status === 'OPEN' && token && !isSeller &&
+                                <OfferForm initialAmount={highestBid + 1} createOffer={createOffer}/>}
                             {isSeller && (
                                 <OfferList
                                     title="Offers"
-                                    offers={offers}
+                                    offers={sellerOffers}
                                     loading={offersLoading}
                                     isSeller
                                     onAccept={acceptOffer.mutate}
@@ -182,11 +187,15 @@ export default function ListingDetailsPage() {
                                     busy={acceptOffer.isPending || rejectOffer.isPending || withdrawOffer.isPending}
                                 />
                             )}
-
-                            {!isSeller && myOffers.length > 0 && (
+                            {isSeller && sellerOffers.length < sortedOffers.length && (
+                                <Button size="small" onClick={() => setSellerShown(s => s + 5)}>
+                                    Show more offers
+                                </Button>
+                            )}
+                            {!isSeller && mySortedOffers.length > 0 && (
                                 <OfferList
                                     title="My Offers"
-                                    offers={myOffers}
+                                    offers={myOffersVisible}
                                     showUsername={false}
                                     loading={offersLoading}
                                     userId={userId ?? undefined}
@@ -194,16 +203,18 @@ export default function ListingDetailsPage() {
                                     isSeller={false}
                                 />
                             )}
+                            {!isSeller && myOffersVisible.length < mySortedOffers.length && (
+                                <Button size="small" onClick={() => setMineShown(s => s + 5)}>
+                                    Show more offers
+                                </Button>
+                            )}
                         </>
                     )}
                 </CardContent>
-
-                <Divider/>
                 <CardContent>
                     <Typography variant="h6" gutterBottom sx={{mt: 2}}>
                         Bidding History
                     </Typography>
-
                     {bidsLoading ? (
                         <CircularProgress size={24}/>
                     ) : bidsError ? (
@@ -251,22 +262,15 @@ function BidForm({
     createBid: ReturnType<typeof useCreateBid>;
 }) {
     const {ask, dialog} = useBuyNowConfirm();
-
     return (
         <>
             <Formik
                 enableReinitialize
-                initialValues={{
-                    amount: buyNowPrice
-                        ? Math.min(highestBid + minIncrement, buyNowPrice)
-                        : highestBid + minIncrement,
-                }}
+                initialValues={{amount: buyNowPrice ? Math.min(highestBid + minIncrement, buyNowPrice) : highestBid + minIncrement}}
                 validationSchema={Yup.object({
                     amount: Yup.number()
                         .required()
-                        .test('min-or-buy-now', `Must be at least $${highestBid + minIncrement}`, value =>
-                            value === buyNowPrice || (value ?? 0) >= highestBid + minIncrement
-                        ),
+                        .test('min-or-buy-now', `Must be at least $${highestBid + minIncrement}`, value => value === buyNowPrice || (value ?? 0) >= highestBid + minIncrement),
                 })}
                 onSubmit={({amount}) => createBid.mutate({amount, buy_now: false})}
             >
@@ -289,10 +293,10 @@ function BidForm({
                                 <Button
                                     variant="outlined"
                                     color="success"
-                                    onClick={() => ask(
-                                        () => createBid.mutate({amount: buyNowPrice, buy_now: true}),
-                                        `$${buyNowPrice}`
-                                    )}
+                                    onClick={() => ask(() => createBid.mutate({
+                                        amount: buyNowPrice,
+                                        buy_now: true
+                                    }), `$${buyNowPrice}`)}
                                     disabled={createBid.isPending}
                                 >
                                     Buy Now
@@ -321,28 +325,14 @@ function OfferForm({
         <Formik
             initialValues={{amount: initialAmount}}
             validationSchema={Yup.object({amount: Yup.number().min(1).required()})}
-            onSubmit={({amount}, {resetForm}) =>
-                createOffer.mutate(amount, {onSuccess: () => resetForm()})
-            }
+            onSubmit={({amount}, {resetForm}) => createOffer.mutate(amount, {onSuccess: () => resetForm()})}
         >
             {({errors, touched, isSubmitting}) => (
                 <Form>
                     <Stack direction="row" spacing={1} alignItems="flex-end" sx={{mb: 2}}>
-                        <Field
-                            as={TextField}
-                            name="amount"
-                            type="number"
-                            label="Your offer ($)"
-                            size="small"
-                            error={touched.amount && !!errors.amount}
-                            helperText={touched.amount && errors.amount}
-                        />
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            startIcon={<LocalOfferIcon/>}
-                            disabled={isSubmitting}
-                        >
+                        <Field as={TextField} name="amount" type="number" label="Your offer ($)" size="small"
+                               error={touched.amount && !!errors.amount} helperText={touched.amount && errors.amount}/>
+                        <Button variant="contained" type="submit" startIcon={<LocalOfferIcon/>} disabled={isSubmitting}>
                             Send Offer
                         </Button>
                     </Stack>
@@ -384,7 +374,6 @@ function OfferList({
                 <CircularProgress size={24}/>
             </>
         );
-
     if (!offers.length)
         return (
             <>
@@ -394,7 +383,6 @@ function OfferList({
                 <Typography>No offers yet.</Typography>
             </>
         );
-
     return (
         <>
             <Typography variant="h6" gutterBottom>
