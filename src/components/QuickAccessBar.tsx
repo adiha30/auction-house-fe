@@ -12,7 +12,7 @@ export default function QuickAccessBar({onViewBids, areBids, onWatchlist, areWat
     const nav = useNavigate();
 
     return (
-        <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" sx={{mt: 2}}>
+        <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap" sx={{mt: 2, mb: 4}}>
             {areBids && (
                 <Button variant="contained" onClick={onViewBids}>View My Bids</Button>
             )}
