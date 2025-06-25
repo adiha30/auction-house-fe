@@ -138,11 +138,11 @@ export default function ListingDetailsPage() {
                     <Typography sx={{my: 2}}>{listing.item.description}</Typography>
                     <Stack direction="row" spacing={4} alignItems="center">
                         <Typography>
-                            <b>{resultLabel}</b> ${resultAmount}
+                            <b>{resultLabel}</b> ${resultAmount.toLocaleString()}
                         </Typography>
                         {hasBuyNow && (
                             <Typography>
-                                <b>Buy-Now:</b> ${listing.buyNowPrice}
+                                <b>Buy-Now:</b> ${listing.buyNowPrice.toLocaleString()}
                             </Typography>
                         )}
                         {listing.status === 'OPEN' ? (
@@ -262,15 +262,16 @@ function BidForm({
     createBid: ReturnType<typeof useCreateBid>;
 }) {
     const {ask, dialog} = useBuyNowConfirm();
+    const minNextBid = highestBid + minIncrement;
     return (
         <>
             <Formik
                 enableReinitialize
-                initialValues={{amount: buyNowPrice ? Math.min(highestBid + minIncrement, buyNowPrice) : highestBid + minIncrement}}
+                initialValues={{amount: buyNowPrice ? Math.min(minNextBid, buyNowPrice) : minNextBid}}
                 validationSchema={Yup.object({
                     amount: Yup.number()
                         .required()
-                        .test('min-or-buy-now', `Must be at least $${highestBid + minIncrement}`, value => value === buyNowPrice || (value ?? 0) >= highestBid + minIncrement),
+                        .test('min-or-buy-now', `Must be at least $${minNextBid.toLocaleString()}`, value => value === buyNowPrice || (value ?? 0) >= minNextBid),
                 })}
                 onSubmit={({amount}) => createBid.mutate({amount, buy_now: false})}
             >
@@ -282,7 +283,7 @@ function BidForm({
                                 name="amount"
                                 type="number"
                                 size="small"
-                                placeholder={`${highestBid + minIncrement}`}
+                                placeholder={`${minNextBid}`}
                                 error={touched.amount && !!errors.amount}
                                 helperText={touched.amount && errors.amount}
                             />
@@ -296,7 +297,7 @@ function BidForm({
                                     onClick={() => ask(() => createBid.mutate({
                                         amount: buyNowPrice,
                                         buy_now: true
-                                    }), `$${buyNowPrice}`)}
+                                    }), `$${buyNowPrice.toLocaleString()}`)}
                                     disabled={createBid.isPending}
                                 >
                                     Buy Now

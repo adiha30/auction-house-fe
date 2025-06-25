@@ -1,5 +1,6 @@
 import api from './axios';
 import {ActiveBid} from "../hooks/useBids.ts";
+import {resolveImageUrls} from "../utils/imageUrls.ts";
 
 export interface CreateBidPayload {
     listingId: string;
@@ -10,5 +11,10 @@ export interface CreateBidPayload {
 export const createBid = (body: CreateBidPayload) =>
     api.post<void | { cause: string }>('/bids', body).then(r => r.data);
 
-export const getMyActiveBids = () =>
-    api.get<ActiveBid[]>('/bids/user/active').then(r => r.data);
+export const getMyActiveBids = async (): Promise<ActiveBid[]> => {
+    const res = await api.get<ActiveBid[]>('/bids/user/active');
+    return res.data.map(activeBid => ({
+        ...activeBid,
+        imageIds: resolveImageUrls(activeBid.imageIds)
+    }));
+}

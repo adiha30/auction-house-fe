@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 
 export const Providers: React.FC<{ children: React.ReactNode }> = ({children}) => {
 
-    const {token, setToken} = useAuth()!; // re‑renders interceptor when token changes
+    const {token, setToken} = useAuth()!;
 
     useEffect(() => {
             const reqId = axios.interceptors.request.use(config => {

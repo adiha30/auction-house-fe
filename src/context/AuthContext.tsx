@@ -1,9 +1,8 @@
-// src/context/AuthContext.tsx
 import React, {createContext, useContext, useEffect, useMemo, useState,} from 'react';
 import {jwtDecode} from 'jwt-decode';
 
 interface JwtPayload {
-    exp: number;          // seconds since epoch
+    exp: number;
     userId?: string;
     sub: string;
 }
@@ -11,11 +10,9 @@ interface JwtPayload {
 type AuthCtx = {
     token: string | null;
     userId: string | null;
-    /** Use this to log-in (set JWT) or log-out (pass null) */
     setToken: (t: string | null) => void;
 };
 
-/* ---------- helpers ---------- */
 function parseJwt(t: string | null): JwtPayload | null {
     if (!t) return null;
     try {
@@ -29,7 +26,6 @@ function isExpired(payload: JwtPayload | null): boolean {
     return !payload || Date.now() >= payload.exp * 1000;
 }
 
-/* ---------- context ---------- */
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
 export const useAuth = () => useContext(AuthContext);
 

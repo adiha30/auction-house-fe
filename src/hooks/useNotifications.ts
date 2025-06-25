@@ -134,6 +134,8 @@ export function useNotifications() {
                         invalidateFromNotification(notification, queryClient);
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
+                        console.log(m);
+                        console.log(JSON.parse(m.body));
                     }
                 })
             },

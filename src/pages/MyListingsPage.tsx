@@ -260,7 +260,6 @@ const MyListingsPage: React.FC = () => {
                     alignItems: 'center',
                 }}
             >
-                {/* Sort Panel */}
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <SortIcon fontSize="small"/>
                     <FormControl size="small">
@@ -288,7 +287,6 @@ const MyListingsPage: React.FC = () => {
                     </FormControl>
                 </Box>
 
-                {/* Filter Panel */}
                 <Box sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                     <FilterListIcon fontSize="small"/>
                     <FormControl size="small">
@@ -344,10 +342,8 @@ const MyListingsPage: React.FC = () => {
                         </>
                     )}
 
-                    {/* Push view toggle to right */}
                     <Box sx={{flexGrow: 1}}/>
 
-                    {/* View Mode Toggle */}
                     <ToggleButtonGroup
                         value={viewMode}
                         exclusive

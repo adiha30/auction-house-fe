@@ -63,19 +63,6 @@ export default function LiveBidFeed() {
 
     return (
         <Paper elevation={3} sx={{p: 1.5, overflow: "hidden", mt: 3, maxHeight: 500, width: 350}}>
-            <Typography variant="subtitle1"
-                        sx={{
-                            mb: 1,
-                            fontWeight: 600,
-                            position: 'sticky',
-                            top: 0,
-                            zIndex: 2,
-                            bgcolor: 'background.paper'
-                        }}
-            >
-                🔴 Live Bids
-            </Typography>
-
             <Box sx={{overflow: 'hidden'}}>
                 <Box
                     component={motion.div}

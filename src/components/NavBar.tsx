@@ -3,14 +3,13 @@ import {Link as RouterLink, useLocation, useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/AuthContext';
 import NotificationMenu from "./NotificationMenu.tsx";
 
-const hideOn = ['/login', '/register'];          // routes without a NavBar
+const hideOn = ['/login', '/register'];
 
 export default function NavBar() {
     const {token, setToken} = useAuth()!;
     const nav = useNavigate();
     const {pathname} = useLocation();
 
-    // Login / register pages should be “chrome‑free”
     if (hideOn.includes(pathname)) return null;
 
     const handleLogout = () => {
@@ -38,6 +37,7 @@ export default function NavBar() {
 
                 {!token && (
                     <>
+                        <Button component={RouterLink} to="/listings" color="inherit">Listings</Button>
                         <Button component={RouterLink} to="/login" color="inherit">Login</Button>
                         <Button component={RouterLink} to="/register" color="inherit">Register</Button>
                     </>

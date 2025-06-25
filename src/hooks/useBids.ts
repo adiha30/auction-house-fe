@@ -19,11 +19,11 @@ export interface ActiveBid {
     amount: number;
     isBuyNow: boolean;
     createdAt: string;
-    // listing snapshot -----------------------------
     listingId: string;
     title: string;
     startPrice: number;
     latestBidAmount?: number | null;
+    imageIds: string[];
     buyNowPrice?: number | null;
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';

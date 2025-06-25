@@ -13,6 +13,7 @@ export interface ListingSummary {
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';
     finalPrice: number;
+    seller: { userId: string; username: string };
     latestBidAmount?: number | null;
     category: string;
     item: ItemDto;
@@ -44,10 +45,10 @@ export interface ItemDto {
     imageIds: string[];
 }
 
-export const getAllListings = async (category?: string) => {
+export const getAllListings = async (category?: string, page = 0, size = 40) => {
     return await api.get<ListingSummary[]>(
         listingsPath,
-        {params: category ? {category} : undefined},
+        {params: { ...(category && {category}), page, size }},
     ).then(res =>
         res.data.map(listing => ({
             ...listing,
@@ -112,7 +113,7 @@ export const getFeaturedListings = async (limit = 5) =>
             })));
 
 export const searchListings = (query: string, sort = 'recent', limit = 40) =>
-    api.get<ListingSummary>(`${listingsPath}/search`, {params: {query, sort, limit}})
+    api.get<ListingSummary[]>(`${listingsPath}/search`, {params: {query, sort, limit}})
         .then(res => res.data)
 
 export const deleteImage = async (id: string) =>
