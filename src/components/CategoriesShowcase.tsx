@@ -13,7 +13,7 @@ export default function CategoriesShowcase() {
     return (
         <Box mt={4}>
             <Typography variant="h5" mb={2}>Browse Categories</Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={5} mb={5}>
                 {categories.slice(0, 5).map(category => (
                     <Grid item xs={6} sm={4} md={3} lg={2} key={category.name}
                           sx={{display: 'flex', '& > *': {width: '100%'}}}>

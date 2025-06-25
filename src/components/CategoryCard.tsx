@@ -15,7 +15,7 @@ export default function CategoryCard({name, icon, onClick}: { name: string; icon
             : (
                 <Stack>
                     {featured?.length
-                        ? featured.slice(0, 4).map(listing => (
+                        ? featured.map(listing => (
                             <Typography key={listing.listingId}
                                         variant="body2">• {pretty(listing.item.title)}</Typography>
                         ))

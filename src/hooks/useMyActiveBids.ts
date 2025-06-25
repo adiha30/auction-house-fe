@@ -1,9 +1,8 @@
 import {useQuery} from "@tanstack/react-query";
-import {ActiveBid} from "./useBids.ts";
 import {getMyActiveBids} from "../api/bidApi.ts";
 
 export const useMyActiveBids = (enabled = true) =>
-    useQuery<ActiveBid[]>({
+    useQuery({
         queryKey: ["myActiveBids"],
         enabled,
         queryFn: () => getMyActiveBids(),
