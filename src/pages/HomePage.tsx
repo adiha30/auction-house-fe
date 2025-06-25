@@ -1,7 +1,15 @@
 // src/pages/HomePage.tsx
 import {
-    Box, Card, CardActionArea, CardContent, Chip, CircularProgress,
-    Container, Grid, Stack, Typography
+    Box,
+    Card,
+    CardActionArea,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Container,
+    Grid,
+    Stack,
+    Typography
 } from '@mui/material';
 import {RefObject, useRef} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';
@@ -26,10 +34,10 @@ import LiveBidFeed from '../components/LiveBidFeed';
 export default function HomePage() {
     /* ---------- data ---------- */
     const {token} = useAuth()!;
-    const {data: user, isLoading: userLoading}   = useCurrentUser();
+    const {data: user, isLoading: userLoading} = useCurrentUser();
     const {data: userListings, isLoading: listingsLoading} = useUserListings();
-    const {data: categories = []}                = useCategories();
-    const {data: activeBids = []}                = useMyActiveBids(!!token);
+    const {data: categories = []} = useCategories();
+    const {data: activeBids = []} = useMyActiveBids(!!token);
 
     const {data: watches, isLoading: watchesLoading} = useQuery<ListingSummary[]>({
         queryKey: ['myWatches'],
@@ -37,24 +45,24 @@ export default function HomePage() {
         enabled: !!token,
     });
 
-    const bidsRef  = useRef<HTMLDivElement | null>(null);
+    const bidsRef = useRef<HTMLDivElement | null>(null);
     const watchRef = useRef<HTMLDivElement | null>(null);
     const scrollTo = (ref: RefObject<HTMLDivElement | null>) =>
         ref.current?.scrollIntoView({behavior: 'smooth'});
 
     // one hot-listings query per category
     const featuredQueries = useQueries({
-        queries: categories.map(cat => ({
-            queryKey: ['hot', cat],
-            queryFn : () => getHotListings(cat, 4),
-            enabled : !!token,
+        queries: categories.map(category => ({
+            queryKey: ['hot', category],
+            queryFn: () => getHotListings(category.name, 4),
+            enabled: !!token,
             staleTime: 60_000,
         }))
     });
 
     /* ---------- LOADING ---------- */
     if (userLoading || listingsLoading || watchesLoading)
-        return <CircularProgress sx={{mt: 8}} />;
+        return <CircularProgress sx={{mt: 8}}/>;
 
     /* ---------- PAGE LAYOUT ---------- */
     return (
@@ -62,8 +70,8 @@ export default function HomePage() {
             <Grid container spacing={3}>
                 {/* ---------- LEFT COLUMN ---------- */}
                 <Grid item xs={12} md={9}>
-                    <HeroCarousel />
-                    <CategoriesShowcase />
+                    <HeroCarousel/>
+                    <CategoriesShowcase/>
 
                     {/* ---------- AUTHENTICATED SECTIONS ---------- */}
                     {token && (
@@ -105,7 +113,7 @@ export default function HomePage() {
                                 const cat = categories[i];
                                 if (q.isLoading || !q.data?.length) return null;
                                 return (
-                                    <Section key={cat} title={`🔥 Hot in ${pretty(cat)}`} listings={q.data}/>
+                                    <Section key={cat.name} title={`🔥 Hot in ${pretty(cat.name)} ${cat.icon}`} listings={q.data}/>
                                 );
                             })}
                         </>
@@ -115,7 +123,7 @@ export default function HomePage() {
                 {/* ---------- RIGHT COLUMN – LIVE FEED ---------- */}
                 <Grid item xs={12} md={3}>
                     <Box position="sticky" top={80}>
-                        <LiveBidFeed />
+                        <LiveBidFeed/>
                     </Box>
                 </Grid>
             </Grid>
@@ -123,7 +131,7 @@ export default function HomePage() {
     );
 }
 
-function ActiveBidsSection({ bids }: { bids: ActiveBid[] }) {
+function ActiveBidsSection({bids}: { bids: ActiveBid[] }) {
     const nav = useNavigate();
 
     const byListing = new Map<string, ActiveBid>();
@@ -151,7 +159,7 @@ function ActiveBidsSection({ bids }: { bids: ActiveBid[] }) {
                                             </Typography>
                                             <Chip size="small"
                                                   label={leading ? 'Leading' : 'Outbid'}
-                                                  color={leading ? 'success' : 'error'} />
+                                                  color={leading ? 'success' : 'error'}/>
                                         </Stack>
                                         <Typography variant="body2" color="text.secondary">
                                             Ends {new Date(bid.endTime).toLocaleDateString()}
@@ -166,7 +174,6 @@ function ActiveBidsSection({ bids }: { bids: ActiveBid[] }) {
         </Box>
     );
 }
-
 
 
 function Section({title, listings}: { title: string; listings: any[] }) {

@@ -1,6 +1,9 @@
 import api from './axios';
 
-export type Category = string;          // <-- just a string
+export interface Category {
+    name: string;
+    icon: string;
+}
 
 export interface FieldMetadata {
     name: string;
@@ -13,6 +16,7 @@ export interface FieldMetadata {
 export interface CategoryMetadata {
     name: string;
     minBidIncrement: number;
+    icon: string;
     requiredFields: FieldMetadata[];
 }
 

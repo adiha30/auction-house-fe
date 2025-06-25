@@ -70,10 +70,19 @@ export default function LiveBidFeed() {
                             position: 'sticky',
                             top: 0,
                             zIndex: 2,
-                            bgcolor: 'background.paper'
+                            bgcolor: 'background.paper',
+                            display: 'flex',
+                            alignItems: 'center'
                         }}
             >
-                🔴 Live Bids
+                <motion.span
+                    animate={{opacity: [0.3, 1, 0.3]}}
+                    transition={{duration: 1.5, repeat: Infinity, ease: "easeInOut"}}
+                    style={{marginRight: '0.5ch'}}
+                >
+                    🔴
+                </motion.span>
+                Live Bids
             </Typography>
 
             <Box sx={{overflow: 'hidden'}}>

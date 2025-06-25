@@ -14,11 +14,17 @@ export default function CategoriesShowcase() {
         <Box mt={4}>
             <Typography variant="h5" mb={2}>Browse Categories</Typography>
             <Grid container spacing={2}>
-                {categories.map(category => (
-                    <Grid item xs={6} sm={4} md={3} lg={2} key={category}>
-                        <CategoryCard name={category} onClick={() => nav(`/listings?category=${encodeURIComponent(category)}`)} />
+                {categories.slice(0, 5).map(category => (
+                    <Grid item xs={6} sm={4} md={3} lg={2} key={category.name}
+                          sx={{display: 'flex', '& > *': {width: '100%'}}}>
+                        <CategoryCard name={category.name} icon={category.icon}
+                                      onClick={() => nav(`/listings?category=${encodeURIComponent(category.name)}`)}/>
                     </Grid>
                 ))}
+                <Grid item xs={6} sm={4} md={3} lg={2} key="all-categories"
+                      sx={{display: 'flex', '& > *': {width: '100%'}}}>
+                    <CategoryCard name="All Categories" icon="📱" onClick={() => nav('/listings')}/>
+                </Grid>
             </Grid>
         </Box>
     );

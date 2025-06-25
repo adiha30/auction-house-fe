@@ -38,6 +38,7 @@ export default function NavBar() {
 
                 {!token && (
                     <>
+                        <Button component={RouterLink} to="/listings" color="inherit">Listings</Button>
                         <Button component={RouterLink} to="/login" color="inherit">Login</Button>
                         <Button component={RouterLink} to="/register" color="inherit">Register</Button>
                     </>

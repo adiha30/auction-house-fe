@@ -8,5 +8,6 @@ export const useFeaturedCategoryListings = (category: string) => {
         queryKey: ['featuredListings', category],
         queryFn: () => getHotListings(category, limit),
         staleTime: 30_000,
+        enabled: category !== 'All Categories',
     });
 }
