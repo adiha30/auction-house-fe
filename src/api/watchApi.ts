@@ -1,6 +1,7 @@
 import api from './axios';
 import {ListingSummary} from "./listingApi.ts";
 import {resolveImageUrls} from "../utils/imageUrls.ts";
+import {enqueueSnackbar} from "notistack";
 
 export const isWatching = (id: string) =>
     api.get<boolean>(`/watch/${id}`).then(res => res.data);
@@ -21,9 +22,13 @@ export const getMyWatches = () =>
             },
         })));
 
-export const toggleWatch = async (id: string) => {
+export const toggleWatch = async (id: string, isSeller: boolean = false) => {
     const watching = await isWatching(id);
     if (watching) {
+        if (isSeller) {
+            enqueueSnackbar("You cannot unwatch your own listing", {variant: 'warning'});
+            return Promise.resolve();
+        }
         return removeWatch(id);
     } else {
         return addWatch(id);

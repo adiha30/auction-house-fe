@@ -18,8 +18,8 @@ import CategoriesShowcase from '../components/CategoriesShowcase';
 import QuickAccessBar from '../components/QuickAccessBar';
 import {toTitleCase} from '../utils/text';
 import LiveBidFeed from '../components/LiveBidFeed';
-import ActiveBidsSection from '../components/ActiveBidsSection';
 import Section from '../components/Section';
+import ActiveBidsSection from "../components/ActiveBidsSection.tsx";
 
 export default function HomePage() {
     const [isFeedCollapsed, setIsFeedCollapsed] = useState(true);
@@ -92,14 +92,14 @@ export default function HomePage() {
 
                                     {/* my listings */}
                                     {!!userListings?.length && (
-                                        <Section title="My Listings" listings={userListings} watches={watches}
-                                                 token={token}/>
+                                        <Section title="My Listings" listings={userListings}
+                                                 token={token} isSellerSection/>
                                     )}
 
                                     {/* watchlist */}
                                     {!!watches?.length && (
                                         <div ref={watchRef}>
-                                            <Section title="My Watched Listings" listings={watches} watches={watches}
+                                            <Section title="My Watched Listings" listings={watches}
                                                      token={token}/>
                                         </div>
                                     )}
@@ -112,7 +112,7 @@ export default function HomePage() {
                                 if (q.isLoading || !q.data?.length) return null;
                                 return (
                                     <Section key={cat.name} title={`🔥 Hot in ${pretty(cat.name)} ${cat.icon}`}
-                                             listings={q.data} watches={watches} token={token}/>
+                                             listings={q.data} token={token}/>
                                 );
                             })}
                         </Box>

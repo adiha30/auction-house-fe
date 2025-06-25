@@ -1,41 +1,23 @@
-import {useNavigate} from 'react-router-dom';
 import {useRef} from 'react';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {Box, Card, CardContent, CardMedia, IconButton, Paper, Stack, Typography} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import {Box, IconButton, Typography} from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 import {ListingSummary} from '../api/listingApi';
-import {toggleWatch} from '../api/watchApi';
-import {useCountdown} from '../hooks/useCountdown';
-
-const useWatchListing = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (listingId: string) => toggleWatch(listingId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ['myWatches']});
-        },
-    });
-};
+import ListingCard from './ListingCard.tsx';
 
 export default function Section({
                                     title,
                                     listings,
-                                    watches,
                                     token,
+                                    isSellerSection = false,
                                 }: {
     title: string;
     listings: ListingSummary[];
-    watches?: ListingSummary[];
     token: string | null;
+    isSellerSection?: boolean;
 }) {
-    const nav = useNavigate();
     const scrollRef = useRef<HTMLDivElement>(null);
-    const {mutate: watchListing} = useWatchListing();
-    const watchedIds = new Set(watches?.map(w => w.listingId));
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
@@ -82,92 +64,11 @@ export default function Section({
                         justifyContent: showArrows ? 'flex-start' : 'center'
                     }}
                 >
-                    {listings.filter(Boolean).map((listing) => {
-                        const isWatched = watchedIds.has(listing.listingId);
-                        const countdown = useCountdown(listing.endTime);
-                        return (
-                            <Card
-                                key={listing.listingId}
-                                component={Paper}
-                                elevation={3}
-                                sx={{
-                                    width: 300,
-                                    height: 280,
-                                    flexShrink: 0,
-                                    transition: 'transform .2s',
-                                    '&:hover': {transform: 'scale(1.02)'},
-                                    display: 'flex',
-                                    flexDirection: 'column'
-                                }}
-                            >
-                                <Box sx={{position: 'relative'}}>
-                                    <CardMedia
-                                        component="img"
-                                        sx={{height: 160, cursor: 'pointer'}}
-                                        image={listing.item?.imageIds?.[0] || `https://via.placeholder.com/300x160?text=No+Image`}
-                                        alt={listing.title || listing.item?.title}
-                                        onClick={() => nav(`/listings/${listing.listingId}`)}
-                                    />
-                                    {token && (
-                                        <IconButton
-                                            size="small"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                watchListing(listing.listingId);
-                                            }}
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 8,
-                                                right: 8,
-                                                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                                color: 'white',
-                                                '&:hover': {backgroundColor: 'rgba(0, 0, 0, 0.7)'}
-                                            }}
-                                        >
-                                            {isWatched ? <VisibilityOffIcon fontSize="small"/> :
-                                                <VisibilityIcon fontSize="small"/>}
-                                        </IconButton>
-                                    )}
-                                </Box>
-                                <CardContent
-                                    onClick={() => nav(`/listings/${listing.listingId}`)}
-                                    sx={{
-                                        cursor: 'pointer',
-                                        pt: 1,
-                                        flexGrow: 1,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between'
-                                    }}>
-                                    <Typography gutterBottom variant="body1" noWrap component="div" fontWeight="bold">
-                                        {listing.title || listing.item?.title}
-                                    </Typography>
-                                    <div>
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="body2" color="text.secondary">
-                                                Current:
-                                                <b style={{color: 'black'}}> ${listing.latestBidAmount ?? listing.startPrice}</b>
-                                            </Typography>
-                                            {listing.buyNowPrice && (
-                                                <Typography variant="body2" color="success.main" fontWeight="bold">
-                                                    Buy: ${listing.buyNowPrice}
-                                                </Typography>
-                                            )}
-                                        </Stack>
-                                        <Typography variant="body2"
-                                                    color={countdown.isUrgent ? 'error.main' : 'text.secondary'}
-                                                    sx={{
-                                                        fontVariantNumeric: 'tabular-nums',
-                                                        mt: 0.5,
-                                                        textAlign: 'right'
-                                                    }}>
-                                            {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
-                                        </Typography>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                    {listings.filter(Boolean).map((listing) => (
+                        <Box key={listing.listingId} sx={{width: 300, flexShrink: 0}}>
+                            <ListingCard listing={listing} token={token} isSeller={isSellerSection}/>
+                        </Box>
+                    ))}
                 </Box>
                 {showArrows && (
                     <IconButton

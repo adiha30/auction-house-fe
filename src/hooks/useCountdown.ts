@@ -1,50 +1,50 @@
-// src/hooks/useCountdown.ts
 import {useEffect, useState} from 'react';
 
-function pad(num: number, len = 2) {
-    return num.toString().padStart(len, '0');
-}
+const calculateTimeLeft = (endTime: string) => {
+    const difference = +new Date(endTime) - +new Date();
+    let timeLeft: { days?: number, hours?: number, minutes?: number, seconds?: number } = {};
 
-export interface Countdown {
-    days: string;
-    hours: string;
-    minutes: string;
-    seconds: string;
-    finished: boolean;
-    isUrgent: boolean;
-}
+    if (difference > 0) {
+        timeLeft = {
+            days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+            hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+            minutes: Math.floor((difference / 1000 / 60) % 60),
+            seconds: Math.floor((difference / 1000) % 60),
+        };
+    }
+    return {difference, timeLeft};
+};
 
-export function useCountdown(isoEnd: string): Countdown {
-    const [now, setNow] = useState(Date.now());
+const formatTimeLeft = (timeLeft: { days?: number, hours?: number, minutes?: number, seconds?: number }): string => {
+    if (Object.keys(timeLeft).length === 0) return "Ended";
+
+    const parts = [];
+    if ((timeLeft.days ?? 0) > 0) parts.push(`${timeLeft.days}d`);
+    if ((timeLeft.hours ?? 0) > 0) parts.push(`${timeLeft.hours}h`);
+    if ((timeLeft.minutes ?? 0) > 0) parts.push(`${timeLeft.minutes}m`);
+    if (parts.length === 0 && (timeLeft.seconds ?? 0) > 0) {
+        parts.push(`${timeLeft.seconds}s`);
+    }
+    return parts.slice(0, 2).join(' ');
+};
+
+export const useCountdown = (endTime: string) => {
+    const [time, setTime] = useState(calculateTimeLeft(endTime));
 
     useEffect(() => {
-        if (!isoEnd) return;
+        const timer = setTimeout(() => {
+            setTime(calculateTimeLeft(endTime));
+        }, 1000);
 
-        const drift = 1000 - (Date.now() % 1000);
-        const timeout = setTimeout(() => {
-            setNow(Date.now());
-            const id = setInterval(() => setNow(Date.now()), 1000);
-            return () => clearInterval(id);
-        }, drift);
+        return () => clearTimeout(timer);
+    });
 
-        return () => clearTimeout(timeout);
-    }, [isoEnd]);
-
-    const diff = Math.max(new Date(isoEnd).getTime() - now, 0);
-    const s = Math.floor(diff / 1000);
-
-    const days = Math.floor(s / 86400);
-    const hours = Math.floor((s % 86400) / 3600);
-    const minutes = Math.floor((s % 3600) / 60);
-    const seconds = s % 60;
-    const isUrgent = diff < 1000 * 60 * 60;
+    const formattedTimeLeft = formatTimeLeft(time.timeLeft);
+    const isUrgent = time.difference > 0 && time.difference < 1000 * 60 * 60 * 24; // Urgent if less than 1 day left
 
     return {
-        days: pad(days, 2),
-        hours: pad(hours, 2),
-        minutes: pad(minutes, 2),
-        seconds: pad(seconds, 2),
-        finished: diff === 0,
+        timeLeft: formattedTimeLeft,
         isUrgent: isUrgent,
+        ...time.timeLeft,
     };
-}
+};
