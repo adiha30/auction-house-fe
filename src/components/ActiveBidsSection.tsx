@@ -1,14 +1,53 @@
 import {useNavigate} from 'react-router-dom';
 import {useRef} from 'react';
-import {Box, Card, CardContent, CardMedia, Chip, IconButton, Paper, Stack, Typography} from '@mui/material';
+import {Box, Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography} from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 import {ActiveBid} from '../hooks/useBids';
 import {useCountdown} from '../hooks/useCountdown';
 
-export default function ActiveBidsSection({bids}: { bids: ActiveBid[] }) {
+function BidCard({bid}: { bid: ActiveBid }) {
     const nav = useNavigate();
+    const {timeLeft, isUrgent} = useCountdown(bid.endTime);
+    const isWinning = bid.amount >= (bid.latestBidAmount ?? bid.startPrice);
+
+    return (
+        <Card
+            sx={{width: 270, cursor: 'pointer', height: '100%'}}
+            onClick={() => nav(`/listings/${bid.listingId}`)}
+        >
+            <CardMedia
+                component="img"
+                height="140"
+                image={bid.imageIds[0]}
+                alt={bid.title}
+            />
+            <CardContent>
+                <Typography variant="h6" noWrap>{bid.title}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                    Your Bid: ${bid.amount.toLocaleString()}
+                </Typography>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mt={1}>
+                    <Chip
+                        label={isWinning ? 'Leading' : 'Outbid'}
+                        color={isWinning ? 'success' : 'error'}
+                        size="small"
+                    />
+                    <Typography
+                        variant="body2"
+                        color={isUrgent ? 'error' : 'text.secondary'}
+                        fontWeight={isUrgent ? 'bold' : 'normal'}
+                    >
+                        {timeLeft}
+                    </Typography>
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function ActiveBidsSection({bids}: { bids: ActiveBid[] }) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const byListing = new Map<string, ActiveBid>();
@@ -56,82 +95,16 @@ export default function ActiveBidsSection({bids}: { bids: ActiveBid[] }) {
                     ref={scrollRef}
                     sx={{
                         display: 'flex',
-                        gap: 2,
                         overflowX: 'auto',
                         scrollBehavior: 'smooth',
                         '&::-webkit-scrollbar': {display: 'none'},
-                        scrollbarWidth: 'none',
-                        padding: '8px 0',
+                        py: 2,
+                        px: 0
                     }}
                 >
-                    {uniqueBids.map(bid => {
-                        const leading = bid.amount >= (bid.latestBidAmount ?? bid.startPrice);
-                        const currentBid = bid.latestBidAmount ?? bid.startPrice;
-                        const countdown = useCountdown(bid.endTime);
-                        return (
-                            <Card
-                                key={bid.listingId}
-                                component={Paper}
-                                elevation={3}
-                                sx={{
-                                    width: 300,
-                                    height: 280,
-                                    flexShrink: 0,
-                                    transition: 'transform .2s',
-                                    '&:hover': {transform: 'scale(1.02)'},
-                                    display: 'flex',
-                                    flexDirection: 'column'
-                                }}
-                            >
-                                <CardMedia
-                                    component="img"
-                                    sx={{height: 160, cursor: 'pointer'}}
-                                    image={(bid as any).imageIds?.[0]}
-                                    alt={bid.title}
-                                    onClick={() => nav(`/listings/${bid.listingId}`)}
-                                />
-                                <CardContent
-                                    onClick={() => nav(`/listings/${bid.listingId}`)}
-                                    sx={{
-                                        cursor: 'pointer',
-                                        pt: 1,
-                                        flexGrow: 1,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'space-between'
-                                    }}>
-                                    <div>
-                                        <Typography gutterBottom variant="body1" noWrap component="div"
-                                                    fontWeight="bold">
-                                            {bid.title}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Current: <b style={{color: 'black'}}>${currentBid}</b>
-                                        </Typography>
-                                    </div>
-                                    <div>
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                            <Typography variant="body2" color="text.secondary">
-                                                Your bid: <b style={{color: 'black'}}>${bid.amount}</b>
-                                            </Typography>
-                                            <Chip size="small"
-                                                  label={leading ? 'Leading' : 'Outbid'}
-                                                  color={leading ? 'success' : 'error'}/>
-                                        </Stack>
-                                        <Typography variant="body2"
-                                                    color={countdown.isUrgent ? 'error.main' : 'text.secondary'}
-                                                    sx={{
-                                                        fontVariantNumeric: 'tabular-nums',
-                                                        mt: 0.5,
-                                                        textAlign: 'right'
-                                                    }}>
-                                            {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
-                                        </Typography>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
+                    <Stack direction="row" spacing={2}>
+                        {uniqueBids.map(bid => <BidCard key={bid.listingId} bid={bid}/>)}
+                    </Stack>
                 </Box>
                 {showArrows && (
                     <IconButton

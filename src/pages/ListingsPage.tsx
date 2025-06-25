@@ -24,6 +24,7 @@ import {getAllListings, ListingSummary} from '../api/listingApi';
 import {useCategories} from "../hooks/useCategories.ts";
 import ListingCard from '../components/ListingCard.tsx';
 import {useAuth} from "../context/AuthContext.tsx";
+import {extractUserId} from "../utils/jwt.ts";
 
 type Listing = ListingSummary & { category?: string };
 
@@ -260,7 +261,14 @@ export default function ListingsPage() {
                     <Grid container spacing={3}>
                         {displayed.map((listing) => (
                             <Grid item key={listing.listingId} xs={12} sm={6} md={4} lg={3}>
-                                <ListingCard listing={listing} token={token}/>
+                                <ListingCard listing={listing} token={token} isSeller={(() => {
+                                  if (!token) return false;
+                                  try {
+                                    return listing.seller.userId === extractUserId(token);
+                                  } catch {
+                                    return false;
+                                  }
+                                })()}/>
                             </Grid>
                         ))}
                     </Grid>

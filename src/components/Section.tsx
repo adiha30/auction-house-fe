@@ -10,12 +10,12 @@ export default function Section({
                                     title,
                                     listings,
                                     token,
-                                    isSellerSection = false,
+                                    userId,
                                 }: {
     title: string;
     listings: ListingSummary[];
     token: string | null;
-    isSellerSection?: boolean;
+    userId?: string;
 }) {
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -66,7 +66,7 @@ export default function Section({
                 >
                     {listings.filter(Boolean).map((listing) => (
                         <Box key={listing.listingId} sx={{width: 300, flexShrink: 0}}>
-                            <ListingCard listing={listing} token={token} isSeller={isSellerSection}/>
+                            <ListingCard listing={listing} token={token} isSeller={userId === listing.seller.userId}/>
                         </Box>
                     ))}
                 </Box>

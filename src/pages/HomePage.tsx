@@ -20,6 +20,7 @@ import {toTitleCase} from '../utils/text';
 import LiveBidFeed from '../components/LiveBidFeed';
 import Section from '../components/Section';
 import ActiveBidsSection from "../components/ActiveBidsSection.tsx";
+import {extractUserId} from "../utils/jwt.ts";
 
 export default function HomePage() {
     const [isFeedCollapsed, setIsFeedCollapsed] = useState(true);
@@ -93,7 +94,7 @@ export default function HomePage() {
                                     {/* my listings */}
                                     {!!userListings?.length && (
                                         <Section title="My Listings" listings={userListings}
-                                                 token={token} isSellerSection/>
+                                                 token={token} userId={extractUserId(token)!}/>
                                     )}
 
                                     {/* watchlist */}

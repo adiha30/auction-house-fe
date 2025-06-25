@@ -16,7 +16,6 @@ export interface FieldMetadata {
 export interface CategoryMetadata {
     name: string;
     minBidIncrement: number;
-    icon: string;
     requiredFields: FieldMetadata[];
 }
 

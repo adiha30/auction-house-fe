@@ -32,12 +32,17 @@ export const useCountdown = (endTime: string) => {
     const [time, setTime] = useState(calculateTimeLeft(endTime));
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setTime(calculateTimeLeft(endTime));
+        const interval = setInterval(() => {
+            const newTime = calculateTimeLeft(endTime);
+            setTime(newTime);
+
+            if (newTime.difference <= 0) {
+                clearInterval(interval);
+            }
         }, 1000);
 
-        return () => clearTimeout(timer);
-    });
+        return () => clearInterval(interval);
+    }, [endTime]);
 
     const formattedTimeLeft = formatTimeLeft(time.timeLeft);
     const isUrgent = time.difference > 0 && time.difference < 1000 * 60 * 60 * 24; // Urgent if less than 1 day left

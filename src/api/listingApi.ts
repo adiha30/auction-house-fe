@@ -13,6 +13,7 @@ export interface ListingSummary {
     endTime: string;
     status: 'OPEN' | 'SOLD' | 'CLOSED';
     finalPrice: number;
+    seller: { userId: string; username: string };
     latestBidAmount?: number | null;
     category: string;
     item: ItemDto;

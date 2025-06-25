@@ -27,7 +27,7 @@ export default function ListingCard({listing, token, isSeller = false}: ListingC
     });
 
     const {mutate: watchListing} = useMutation({
-        mutationFn: () => toggleWatch(listing.listingId),
+        mutationFn: () => toggleWatch(listing.listingId, isSeller),
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['watching', listing.listingId]});
             queryClient.invalidateQueries({queryKey: ['myWatches']});
@@ -93,11 +93,11 @@ export default function ListingCard({listing, token, isSeller = false}: ListingC
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="body2" color="text.secondary">
                             Current:
-                            <b style={{color: 'black'}}> ${listing.latestBidAmount ?? listing.startPrice}</b>
+                            <b style={{color: 'black'}}> ${listing.latestBidAmount?.toLocaleString() ?? listing.startPrice.toLocaleString()}</b>
                         </Typography>
                         {listing.buyNowPrice && (
                             <Typography variant="body2" color="success.main" fontWeight="bold">
-                                Buy: ${listing.buyNowPrice}
+                                Buy: ${listing.buyNowPrice.toLocaleString()}
                             </Typography>
                         )}
                     </Stack>

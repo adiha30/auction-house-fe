@@ -10,6 +10,7 @@ import {useCreateBid} from '../hooks/useCreateBid';
 import {useCountdown} from '../hooks/useCountdown';
 import {toTitleCase} from "../utils/text.ts";
 import {useBuyNowConfirm} from "../hooks/useBuyNowConfirm.tsx";
+import {ListingSummary} from "../api/listingApi.ts";
 
 const pulse = keyframes`
   0%   { opacity: .85; transform: scale(1); }
@@ -33,13 +34,13 @@ export default function HeroCarousel() {
     );
 }
 
-function HeroSlide({listing}: { listing: any }) {
+function HeroSlide({listing}: { listing: ListingSummary }) {
     const nav = useNavigate();
     const {token} = useAuth() || {};
-    const createBid = useCreateBid(listing.listingId);
+    const createBid = useCreateBid(String(listing.listingId));
     const {ask, dialog} = useBuyNowConfirm();
     const {palette} = useTheme();
-    const countdown = useCountdown(listing.endTime);
+    const countdown = useCountdown(String(listing.endTime));
     const buyAvailable = !!listing.buyNowPrice;
     const bg = listing.item?.imageIds?.[0];
 
@@ -61,7 +62,7 @@ function HeroSlide({listing}: { listing: any }) {
                 </Typography>
 
                 <Typography variant="h6" color="#fff">
-                    Current Price: <b>${listing.latestBidAmount ?? listing.startPrice}</b>
+                    Current Price: <b>${listing.latestBidAmount?.toLocaleString() ?? listing.startPrice.toLocaleString()}</b>
                 </Typography>
 
                 <Typography
@@ -75,9 +76,9 @@ function HeroSlide({listing}: { listing: any }) {
                     Ends in: {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
                 </Typography>
 
-                <Stack direction="row" spacing={2} flexWrap="wrap">
+                <Stack direction="row" spacing={2}>
                     <Button
-                        variant="contained" size="large"
+                        variant="contained" size="medium"
                         sx={heroBtnSx(palette.primary.main)}
                         onClick={() => nav(`/listings/${listing.listingId}`)}
                     >
@@ -88,7 +89,7 @@ function HeroSlide({listing}: { listing: any }) {
                         <span>
                             <Button
                                 variant="outlined"
-                                size="large"
+                                size="medium"
                                 sx={heroBtnSx('#fff', true)}
                                 disabled={!token}
                                 onClick={() => nav(`/listings/${listing.listingId}#bid`)}
@@ -101,16 +102,16 @@ function HeroSlide({listing}: { listing: any }) {
 
                     {token && buyAvailable && (
                         <Button
-                            variant="contained" size="large" color="success"
+                            variant="contained" size="medium" color="success"
                             sx={heroBtnSx(palette.success.main)}
                             onClick={() =>
                                 ask(
-                                    () => createBid.mutate({amount: listing.buyNowPrice, buy_now: true}),
-                                    `$${listing.buyNowPrice}`
+                                    () => createBid.mutate({amount: listing.buyNowPrice!, buy_now: true}),
+                                    `$${listing.buyNowPrice?.toLocaleString()}`
                                 )
                             }
                         >
-                            Buy Now ${listing.buyNowPrice}
+                            Buy Now ${listing.buyNowPrice?.toLocaleString() ?? ''}
                         </Button>
                     )}
                 </Stack>
@@ -121,8 +122,8 @@ function HeroSlide({listing}: { listing: any }) {
 }
 
 const heroBtnSx = (bg: string, outlined = false) => ({
-    borderRadius: 40,
-    px: 3,
+    borderRadius: 30,
+    px: 2.75,
     fontWeight: 600,
     backdropFilter: outlined ? 'blur(2px)' : undefined,
     borderColor: outlined ? 'rgba(255,255,255,.7)' : undefined,
