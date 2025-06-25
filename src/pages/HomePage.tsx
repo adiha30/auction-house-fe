@@ -1,16 +1,8 @@
 // src/pages/HomePage.tsx
 import {
-    Box,
-    Card,
-    CardActionArea,
-    CardContent,
-    Chip,
-    CircularProgress,
-    Container,
-    Stack,
-    Typography,
+    Box, Card, CardActionArea, CardContent, Chip, CircularProgress,
+    Container, Grid, Stack, Typography
 } from '@mui/material';
-import Grid from '@mui/material/Grid';
 import {RefObject, useRef} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';
 import {useNavigate} from 'react-router-dom';
@@ -29,102 +21,107 @@ import HeroCarousel from '../components/HeroCarousel';
 import CategoriesShowcase from '../components/CategoriesShowcase';
 import QuickAccessBar from '../components/QuickAccessBar';
 import {toTitleCase} from '../utils/text';
+import LiveBidFeed from '../components/LiveBidFeed';
 
 export default function HomePage() {
+    /* ---------- data ---------- */
     const {token} = useAuth()!;
-    const {data: user, isLoading: userLoading} = useCurrentUser();
+    const {data: user, isLoading: userLoading}   = useCurrentUser();
     const {data: userListings, isLoading: listingsLoading} = useUserListings();
+    const {data: categories = []}                = useCategories();
+    const {data: activeBids = []}                = useMyActiveBids(!!token);
+
     const {data: watches, isLoading: watchesLoading} = useQuery<ListingSummary[]>({
         queryKey: ['myWatches'],
         queryFn: getMyWatches,
         enabled: !!token,
     });
-    const {data: categories = []} = useCategories();
-    const {data: activeBids = []} = useMyActiveBids(!!token);
 
-    const bidsRef = useRef<HTMLDivElement | null>(null);
+    const bidsRef  = useRef<HTMLDivElement | null>(null);
     const watchRef = useRef<HTMLDivElement | null>(null);
     const scrollTo = (ref: RefObject<HTMLDivElement | null>) =>
         ref.current?.scrollIntoView({behavior: 'smooth'});
 
     // one hot-listings query per category
     const featuredQueries = useQueries({
-        queries: categories.map((category) => ({
-            queryKey: ['hot', category],
-            queryFn: () => getHotListings(category, 4),
-            enabled: !!token,
+        queries: categories.map(cat => ({
+            queryKey: ['hot', cat],
+            queryFn : () => getHotListings(cat, 4),
+            enabled : !!token,
             staleTime: 60_000,
-        })),
+        }))
     });
 
-    /* ---------- unauthenticated ---------- */
-    if (!token) {
-        return (
-            <>
-                <HeroCarousel/>
-                <CategoriesShowcase/>
-                <Box textAlign="center" mt={8}>
-                    <Typography variant="h3">Home</Typography>
-                </Box>
-            </>
-        );
-    }
+    /* ---------- LOADING ---------- */
+    if (userLoading || listingsLoading || watchesLoading)
+        return <CircularProgress sx={{mt: 8}} />;
 
-    /* ---------- loading ---------- */
-    if (userLoading || listingsLoading || watchesLoading) {
-        return <CircularProgress sx={{mt: 8}}/>;
-    }
-
-    const areWatches = !!watches?.length;
-    const areBids = !!activeBids?.length;
-
+    /* ---------- PAGE LAYOUT ---------- */
     return (
         <Container sx={{mt: 2}}>
-            <HeroCarousel/>
-            <CategoriesShowcase/>
+            <Grid container spacing={3}>
+                {/* ---------- LEFT COLUMN ---------- */}
+                <Grid item xs={12} md={9}>
+                    <HeroCarousel />
+                    <CategoriesShowcase />
 
-            <Box textAlign="center" mt={4}>
-                <Typography variant="h4" fontWeight={600}>
-                    {`Welcome back, ${toTitleCase(user?.username ?? '')}! Ready to win today?`}
-                </Typography>
+                    {/* ---------- AUTHENTICATED SECTIONS ---------- */}
+                    {token && (
+                        <>
+                            <Box textAlign="center" mt={4}>
+                                <Typography variant="h4" fontWeight={600}>
+                                    {`Welcome back, ${toTitleCase(user?.username ?? '')}! Ready to win today?`}
+                                </Typography>
 
-                <QuickAccessBar
-                    onViewBids={() => scrollTo(bidsRef)}
-                    areBids={areBids}
-                    onWatchlist={() => scrollTo(watchRef)}
-                    areWatches={areWatches}
-                />
-            </Box>
+                                <QuickAccessBar
+                                    onViewBids={() => scrollTo(bidsRef)}
+                                    areBids={!!activeBids.length}
+                                    onWatchlist={() => scrollTo(watchRef)}
+                                    areWatches={!!watches?.length}
+                                />
+                            </Box>
 
-            {/* ---------- active bids ---------- */}
-            {areBids && (
-                <div ref={bidsRef}>
-                    <ActiveBidsSection bids={activeBids}/>
-                </div>
-            )}
+                            {/* active bids */}
+                            {!!activeBids.length && (
+                                <div ref={bidsRef}>
+                                    <ActiveBidsSection bids={activeBids}/>
+                                </div>
+                            )}
 
-            {/* ---------- my listings ---------- */}
-            {!!userListings?.length && <Section title="My Listings" listings={userListings}/>}
+                            {/* my listings */}
+                            {!!userListings?.length && (
+                                <Section title="My Listings" listings={userListings}/>
+                            )}
 
-            {/* ---------- watchlist ---------- */}
-            {areWatches && (
-                <div ref={watchRef}>
-                    <Section title="My Watched Listings" listings={watches!}/>
-                </div>
-            )}
+                            {/* watchlist */}
+                            {!!watches?.length && (
+                                <div ref={watchRef}>
+                                    <Section title="My Watched Listings" listings={watches}/>
+                                </div>
+                            )}
 
-            {/* ---------- featured per category ---------- */}
-            {featuredQueries.map((q, idx) => {
-                const cat = categories[idx];
-                if (q.isLoading || !q.data?.length) return null;
-                return (
-                    <Section key={cat} title={`🔥 Hot in ${pretty(cat)}`} listings={q.data}/>
-                );
-            })}
+                            {/* featured per category */}
+                            {featuredQueries.map((q, i) => {
+                                const cat = categories[i];
+                                if (q.isLoading || !q.data?.length) return null;
+                                return (
+                                    <Section key={cat} title={`🔥 Hot in ${pretty(cat)}`} listings={q.data}/>
+                                );
+                            })}
+                        </>
+                    )}
+                </Grid>
+
+                {/* ---------- RIGHT COLUMN – LIVE FEED ---------- */}
+                <Grid item xs={12} md={3}>
+                    <Box position="sticky" top={80}>
+                        <LiveBidFeed />
+                    </Box>
+                </Grid>
+            </Grid>
         </Container>
     );
 }
-
 
 function ActiveBidsSection({ bids }: { bids: ActiveBid[] }) {
     const nav = useNavigate();
