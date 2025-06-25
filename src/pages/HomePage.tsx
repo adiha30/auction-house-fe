@@ -25,7 +25,6 @@ import {extractUserId} from "../utils/jwt.ts";
 export default function HomePage() {
     const [isFeedCollapsed, setIsFeedCollapsed] = useState(true);
 
-    /* ---------- data ---------- */
     const {token} = useAuth()!;
     const {data: user, isLoading: userLoading} = useCurrentUser();
     const {data: userListings, isLoading: listingsLoading} = useUserListings();
@@ -43,7 +42,6 @@ export default function HomePage() {
     const scrollTo = (ref: RefObject<HTMLDivElement | null>) =>
         ref.current?.scrollIntoView({behavior: 'smooth'});
 
-    // one hot-listings query per category
     const featuredQueries = useQueries({
         queries: categories.map(category => ({
             queryKey: ['hot', category.name],
@@ -52,21 +50,17 @@ export default function HomePage() {
         }))
     });
 
-    /* ---------- LOADING ---------- */
     if (userLoading || listingsLoading || watchesLoading)
         return <CircularProgress sx={{mt: 8}}/>;
 
-    /* ---------- PAGE LAYOUT ---------- */
     return (
         <>
             <Container maxWidth={false} sx={{mt: 2, mb: 4, px: 0}}>
                 <Grid container spacing={3} justifyContent="center">
-                    {/* ---------- MAIN CONTENT ---------- */}
                     <Grid item xs={12}>
                         <HeroCarousel/>
 
                         <Box sx={{maxWidth: 1280, mx: 'auto', px: {xs: 2, md: 3}}}>
-                            {/* ---------- AUTHENTICATED SECTIONS ---------- */}
                             {token && (
                                 <>
                                     <Box textAlign="center" mt={4}>
@@ -84,20 +78,17 @@ export default function HomePage() {
                                         <CategoriesShowcase/>
                                     </Box>
 
-                                    {/* active bids */}
                                     {!!activeBids.length && (
                                         <div ref={bidsRef}>
                                             <ActiveBidsSection bids={activeBids}/>
                                         </div>
                                     )}
 
-                                    {/* my listings */}
                                     {!!userListings?.length && (
                                         <Section title="My Listings" listings={userListings}
                                                  token={token} userId={extractUserId(token)!}/>
                                     )}
 
-                                    {/* watchlist */}
                                     {!!watches?.length && (
                                         <div ref={watchRef}>
                                             <Section title="My Watched Listings" listings={watches}
@@ -107,7 +98,6 @@ export default function HomePage() {
                                 </>
                             )}
 
-                            {/* featured per category */}
                             {featuredQueries.slice(0, 5).map((q, i) => {
                                 const cat = categories[i];
                                 if (q.isLoading || !q.data?.length) return null;
@@ -121,7 +111,6 @@ export default function HomePage() {
                 </Grid>
             </Container>
 
-            {/* ---------- LIVE FEED CHATBOX ---------- */}
             <Paper
                 elevation={6}
                 sx={{

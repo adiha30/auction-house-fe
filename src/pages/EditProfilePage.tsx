@@ -37,7 +37,6 @@ export default function EditProfilePage() {
         },
     };
 
-    // Function to format credit card number with hyphens
     function formatCreditCard(value: string): string {
         const digits = value.replace(/\D/g, '');
         const parts = [];
@@ -49,7 +48,6 @@ export default function EditProfilePage() {
         return parts.join('-');
     }
 
-    // Function to format expiry date with slash
     function formatExpiryDate(value: string): string {
         const digits = value.replace(/\D/g, '');
 
@@ -73,7 +71,6 @@ export default function EditProfilePage() {
                     }
 
                     if (payload.ccInfo?.ccNumber) {
-                        // Remove formatting before submitting
                         payload.ccInfo.ccNumber = payload.ccInfo.ccNumber.replace(/-/g, '');
                     } else {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

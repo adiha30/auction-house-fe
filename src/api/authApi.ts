@@ -4,7 +4,7 @@ export const login = (cred: { username: string, password: string }) =>
     api.post<string>('/auth/login', cred).then((res) => res.data);
 
 export const register = (user: RegisterPayload) =>
-    api.post<string>('/users', user).then((res) => res.data);    // userId
+    api.post<string>('/users', user).then((res) => res.data);
 
 interface RegisterPayload {
     username: string;

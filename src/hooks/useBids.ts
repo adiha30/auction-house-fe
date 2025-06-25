@@ -19,7 +19,6 @@ export interface ActiveBid {
     amount: number;
     isBuyNow: boolean;
     createdAt: string;
-    // listing snapshot -----------------------------
     listingId: string;
     title: string;
     startPrice: number;

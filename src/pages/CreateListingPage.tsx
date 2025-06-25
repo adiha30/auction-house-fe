@@ -1,4 +1,3 @@
-// src/pages/CreateListingPage.tsx
 import {
     Box,
     Button,
@@ -75,9 +74,7 @@ export default function CreateListingPage({
     const {data: meta} = useCategoryMetadata(initialCategory);
     const [imageIds, setImageIds] = useState<string[]>([]);
 
-    /* ---------- validation schema ---------- */
     const schema = useMemo(() => {
-        // Base schema for top-level fields
         const baseSchema = {
             title: Yup.string().min(3).max(60).required(),
             description: Yup.string().min(10).max(1000).required(),
@@ -89,7 +86,6 @@ export default function CreateListingPage({
             duration: Yup.string().required(),
         };
 
-        // Nested schema for extra fields
         const extraFields: Record<string, Yup.AnySchema> = {};
         meta?.requiredFields.forEach((f) => {
             extraFields[f.name] =
@@ -111,7 +107,6 @@ export default function CreateListingPage({
         '2 w': 24 * 14,
     };
 
-    /* ---------- UI ---------- */
     return (
         <Box mt={4} display="flex" justifyContent="center">
             <Paper sx={{p: 4, width: 640}}>
@@ -227,7 +222,6 @@ export default function CreateListingPage({
                                     )}
                                 </Field>
 
-                                {/* ---------- images ---------- */}
                                 <Stack spacing={1}>
                                     <Button
                                         variant="outlined"

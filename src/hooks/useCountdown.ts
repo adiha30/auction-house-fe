@@ -45,7 +45,7 @@ export const useCountdown = (endTime: string) => {
     }, [endTime]);
 
     const formattedTimeLeft = formatTimeLeft(time.timeLeft);
-    const isUrgent = time.difference > 0 && time.difference < 1000 * 60 * 60 * 24; // Urgent if less than 1 day left
+    const isUrgent = time.difference > 0 && time.difference < 1000 * 60 * 60 * 24;
 
     return {
         timeLeft: formattedTimeLeft,

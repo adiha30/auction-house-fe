@@ -52,7 +52,7 @@ export default function ListingCard({listing, token, isSeller = false}: ListingC
                 <CardMedia
                     component="img"
                     sx={{height: 160}}
-                    image={imageUrl || `https://via.placeholder.com/300x160?text=No+Image`}
+                    image={imageUrl}
                     alt={title}
                 />
                 {token && !isSeller && (
