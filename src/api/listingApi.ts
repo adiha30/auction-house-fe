@@ -11,7 +11,7 @@ export interface ListingSummary {
     startPrice: number;
     buyNowPrice?: number;
     endTime: string;
-    status: 'OPEN' | 'SOLD' | 'CLOSED';
+    status: 'OPEN' | 'SOLD' | 'CLOSED' | 'REMOVED';
     finalPrice: number;
     seller: { userId: string; username: string };
     latestBidAmount?: number | null;
@@ -122,3 +122,6 @@ export const deleteImage = async (id: string) =>
 
 export const createListing = (body: CreateListingPayload) =>
     api.post(listingsPath, body).then((res) => res.data);
+
+export const deleteListingAsAdmin = (id: string, reason: string) =>
+    api.delete(`/admin/listings/${id}`, {data: {reason}});

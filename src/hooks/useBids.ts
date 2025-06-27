@@ -26,7 +26,7 @@ export interface ActiveBid {
     imageIds: string[];
     buyNowPrice?: number | null;
     endTime: string;
-    status: 'OPEN' | 'SOLD' | 'CLOSED';
+    status: 'OPEN' | 'SOLD' | 'CLOSED' | 'REMOVED';
 }
 
 

@@ -8,8 +8,14 @@ import {
     CardContent,
     CardMedia,
     CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
     Divider,
     IconButton,
+    MenuItem,
     Stack,
     TextField,
     Typography,
@@ -17,9 +23,9 @@ import {
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
 import {formatDistanceToNow} from 'date-fns';
-import {useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {isAxiosError} from 'axios';
-import {useQueryClient} from '@tanstack/react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {useListing} from '../hooks/useListing';
 import type {Bid} from '../hooks/useBids';
 import {useBids} from '../hooks/useBids';
@@ -37,17 +43,42 @@ import {toTitleCase} from '../utils/text';
 import {useBuyNowConfirm} from '../hooks/useBuyNowConfirm';
 import {useMemo, useState} from 'react';
 import {useCountdown} from '../hooks/useCountdown';
+import {Role} from "../api/authApi.ts";
+import {useCurrentUser} from "../hooks/useCurrentUser.ts";
+import {deleteListingAsAdmin} from '../api/listingApi.ts';
+import {enqueueSnackbar} from "notistack";
+import {pretty} from "./CreateListingPage.tsx";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
     const {id} = useParams<{ id: string }>();
     const {token, userId} = useAuth()!;
+    const {data: user} = useCurrentUser();
+    const isAdmin = user?.role === Role.ADMIN;
+    const nav = useNavigate();
+
+    const [rmOpen, setRmOpen] = useState(false);
+    const [reason, setReason] = useState('Innappropriate');
+    const reasons = [
+        "Innappropriate", "Spam", "Against community guidelines",
+        "Hate speech", "Harassment", "Scam", "Illegal content", "Other"
+    ]
+
+    const rmMutation = useMutation({
+        mutationFn: () => deleteListingAsAdmin(id!, reason),
+        onSuccess: () => {
+            enqueueSnackbar("Listing removed successfully", {variant: 'success'});
+            qc.invalidateQueries({queryKey: ['listings']});
+            nav('/listings');
+        },
+        onError: () => enqueueSnackbar("Failed to remove listing", {variant: 'error'}),
+    })
+
 
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
     const {data: bids = [], isLoading: bidsLoading, error: bidsError} = useBids(id!);
 
-    // countdown hook must run on every render
     const countdown = useCountdown(listing?.endTime ?? '');
 
     const isSeller = listing?.seller.userId === userId;
@@ -102,7 +133,8 @@ export default function ListingDetailsPage() {
     const closedWithBuyNow = listing.closingMethod === 'BUY_NOW';
 
     let resultLabel = 'Highest current bid:';
-    let resultAmount = highestBid;
+    let resultAmount: number | null = highestBid;
+    const isRemoved = listing.status === 'REMOVED';
 
     if (listing.status !== 'OPEN') {
         if (closedWithOffer) {
@@ -119,53 +151,92 @@ export default function ListingDetailsPage() {
 
     return (
         <Box mt={4} display="flex" justifyContent="center">
+            <Dialog open={rmOpen} onClose={() => setRmOpen(false)}>
+                <DialogTitle>Remove Listing?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Pick a reason for removing this listing:
+                    </DialogContentText>
+                    <TextField
+                        select fullWidth label="Reason" margin="dense"
+                        value={reason} onChange={e => setReason(e.target.value)}
+                    >
+                        {reasons.map(reason => (
+                            <MenuItem key={reason} value={reason}>{reason}</MenuItem>
+                        ))}
+                    </TextField>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setRmOpen(false)}>Cancel</Button>
+                    <Button
+                        color="error" variant="contained"
+                        disabled={rmMutation.isPending}
+                        onClick={() => rmMutation.mutate()}
+                    >
+                        Remove
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <Card sx={{maxWidth: 800, p: 2}}>
                 <CardMedia component="img" height="320" image={listing.item.imageIds[0]}
                            alt={toTitleCase(listing.item.title)}/>
                 <CardContent>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{mb: 1}}>
                         <Typography variant="h4">{toTitleCase(listing.item.title)}</Typography>
-                        {token && (
+                        {token && !isRemoved && (
                             <IconButton size="small" onClick={() => toggle.mutate()} disabled={toggle.isPending}
                                         title={watching ? 'Unwatch' : 'Watch'}>
                                 {watching ? <VisibilityOffIcon/> : <VisibilityIcon/>}
                             </IconButton>
                         )}
+                        {isAdmin && (
+                            <Button
+                                color="error"
+                                variant="contained"
+                                sx={{ml: 2}}
+                                onClick={() => setRmOpen(true)}
+                            >
+                                Remove Listing
+                            </Button>
+                        )}
                     </Stack>
                     <Typography color="text.secondary" gutterBottom>
-                        {listing.category} · {listing.status}
+                        {pretty(listing.category)} · {listing.status == "REMOVED" ? "Removed By Admin" : pretty(listing.status)}
                     </Typography>
                     <Typography sx={{my: 2}}>{listing.item.description}</Typography>
-                    <Stack direction="row" spacing={4} alignItems="center">
-                        <Typography>
-                            <b>{resultLabel}</b> ${resultAmount.toLocaleString()}
-                        </Typography>
-                        {hasBuyNow && (
+                    {!isRemoved && (
+                        <Stack direction="row" spacing={4} alignItems="center">
                             <Typography>
-                                <b>Buy-Now:</b> ${listing.buyNowPrice.toLocaleString()}
+                                <b>{resultLabel}</b> ${resultAmount.toLocaleString()}
                             </Typography>
-                        )}
-                        {listing.status === 'OPEN' ? (
-                            <Typography
-                                sx={{
-                                    fontVariantNumeric: 'tabular-nums',
-                                    minWidth: '180px',
-                                    textAlign: 'right',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                <b>Ends&nbsp;in:</b>&nbsp;
-                                {countdown.days}d&nbsp;
-                                {countdown.hours}h&nbsp;
-                                {countdown.minutes}m&nbsp;
-                                {countdown.seconds}s
-                            </Typography>
-                        ) : (
-                            <Typography>
-                                <b>Ended:</b> {timeSinceEnd}
-                            </Typography>
-                        )}
-                    </Stack>
+                            {hasBuyNow && (
+                                <Typography>
+                                    <b>Buy-Now:</b> ${listing.buyNowPrice.toLocaleString()}
+                                </Typography>
+                            )}
+                            {listing.status === 'OPEN' ? (
+                                <Typography
+                                    sx={{
+                                        fontVariantNumeric: 'tabular-nums',
+                                        minWidth: '180px',
+                                        textAlign: 'right',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <b>Ends&nbsp;in:</b>&nbsp;
+                                    {countdown.days}d&nbsp;
+                                    {countdown.hours}h&nbsp;
+                                    {countdown.minutes}m&nbsp;
+                                    {countdown.seconds}s
+                                </Typography>
+                            ) : (
+                                <Typography>
+                                    <b>Ended:</b> {timeSinceEnd}
+                                </Typography>
+                            )}
+                        </Stack>
+                    )}
                     {listing.status === 'OPEN' && token && !isSeller && (
                         <BidForm highestBid={highestBid} minIncrement={minIncrement} buyNowPrice={listing.buyNowPrice}
                                  createBid={createBid}/>
@@ -173,40 +244,52 @@ export default function ListingDetailsPage() {
                     {offersAllowed && (
                         <>
                             <Divider sx={{my: 3}}/>
-                            {listing.status === 'OPEN' && token && !isSeller &&
-                                <OfferForm initialAmount={highestBid + 1} createOffer={createOffer}/>}
+
                             {isSeller && (
-                                <OfferList
-                                    title="Offers"
-                                    offers={sellerOffers}
-                                    loading={offersLoading}
-                                    isSeller
-                                    onAccept={acceptOffer.mutate}
-                                    onReject={rejectOffer.mutate}
-                                    userId={userId}
-                                    busy={acceptOffer.isPending || rejectOffer.isPending || withdrawOffer.isPending}
-                                />
+                                <>
+                                    <OfferList
+                                        title="Offers"
+                                        offers={sellerOffers}
+                                        loading={offersLoading}
+                                        isSeller
+                                        onAccept={acceptOffer.mutate}
+                                        onReject={rejectOffer.mutate}
+                                        userId={userId ?? undefined}
+                                        busy={isRemoved && acceptOffer.isPending || rejectOffer.isPending || withdrawOffer.isPending}
+                                    />
+                                    {sellerOffers.length < sortedOffers.length && (
+                                        <Button size="small" onClick={() => setSellerShown(s => s + 5)}>
+                                            Show more offers
+                                        </Button>
+                                    )}
+                                </>
                             )}
-                            {isSeller && sellerOffers.length < sortedOffers.length && (
-                                <Button size="small" onClick={() => setSellerShown(s => s + 5)}>
-                                    Show more offers
-                                </Button>
-                            )}
-                            {!isSeller && mySortedOffers.length > 0 && (
-                                <OfferList
-                                    title="My Offers"
-                                    offers={myOffersVisible}
-                                    showUsername={false}
-                                    loading={offersLoading}
-                                    userId={userId ?? undefined}
-                                    onWithdraw={withdrawOffer.mutate}
-                                    isSeller={false}
-                                />
-                            )}
-                            {!isSeller && myOffersVisible.length < mySortedOffers.length && (
-                                <Button size="small" onClick={() => setMineShown(s => s + 5)}>
-                                    Show more offers
-                                </Button>
+
+                            {!isSeller && token && (
+                                <>
+                                    {listing.status === 'OPEN' && (
+                                        <OfferForm initialAmount={highestBid + 1} createOffer={createOffer}/>
+                                    )}
+                                    {mySortedOffers.length > 0 && (
+                                        <>
+                                            <OfferList
+                                                title="My Offers"
+                                                offers={myOffersVisible}
+                                                showUsername={false}
+                                                loading={offersLoading}
+                                                userId={userId ?? undefined}
+                                                onWithdraw={withdrawOffer.mutate}
+                                                isSeller={false}
+                                                busy={isRemoved && withdrawOffer.isPending}
+                                            />
+                                            {myOffersVisible.length < mySortedOffers.length && (
+                                                <Button size="small" onClick={() => setMineShown(s => s + 5)}>
+                                                    Show more offers
+                                                </Button>
+                                            )}
+                                        </>
+                                    )}
+                                </>
                             )}
                         </>
                     )}
