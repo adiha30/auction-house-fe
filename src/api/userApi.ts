@@ -7,10 +7,14 @@ export interface User {
     password?: string;
     role: 'USER' | 'ADMIN';
     ccInfo?: { ccNumber?: string; ccExpiry?: string; ccCvc?: string };
+    active: boolean;
 }
 
 export const getUser = (id: string) =>
     api.get<User>(`/users/${id}`).then(res => res.data);
+
+export const activateUser = (id: string) =>
+    api.put<string>(`/users/${id}/activate`).then(res => res.data);
 
 export const updateUser = (id: string, body: Partial<User>) =>
     api.put<string>(`/users/${id}`, body).then(res => res.data);

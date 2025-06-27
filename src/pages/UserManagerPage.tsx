@@ -1,65 +1,64 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from "react";
 import {
-    Avatar,
     Box,
     Button,
+    Checkbox,
     CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     FormControl,
+    FormControlLabel,
     InputLabel,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
     MenuItem,
-    Pagination,
     Paper,
     Select,
     SelectChangeEvent,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
     TextField,
     Typography
-} from '@mui/material';
-import {useUsers} from '../hooks/useUsers';
-import {useCurrentUser} from '../hooks/useCurrentUser';
-import {Delete, Edit as Pencil, Visibility as Eye} from "@mui/icons-material";
-import {EditProfileForm} from './EditProfilePage';
+} from "@mui/material";
+import {useCurrentUser} from "../hooks/useCurrentUser.ts";
+import {useUsers} from "../hooks/useUsers.ts";
+import {useDebounce} from "../hooks/useDebounce.ts";
 import {User} from "../api/userApi.ts";
+import UserActionsMenu from "../components/UserActionsMenu.tsx";
+import EditUserDialog from "../components/EditUserDialog.tsx";
 import {useDeactivateUser} from "../hooks/useDeactivateUser.ts";
-
-const useDebounce = (value: string, delay: number) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => clearTimeout(handler);
-    }, [value, delay]);
-    return debouncedValue;
-};
+import {useActivateUser} from "../hooks/useActivateUser.ts";
 
 export default function UserManagerPage() {
     const {data: currentUser} = useCurrentUser();
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showInactive, setShowInactive] = useState(false);
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
+    const [activatingUser, setActivatingUser] = useState<User | null>(null);
 
     const {data, isLoading, isError, refetch} = useUsers({
         page: page - 1,
         size: rowsPerPage,
         query: debouncedSearchQuery,
         isAdmin: currentUser?.role === 'ADMIN',
+        showInactive: showInactive,
     });
 
     const deactivateMutation = useDeactivateUser();
+    const activateMutation = useActivateUser();
 
-    const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-        setPage(value);
+    const handlePageChange = (_event: unknown, newPage: number) => {
+        setPage(newPage + 1);
     };
 
     const handleRowsPerPageChange = (event: SelectChangeEvent<number>) => {
@@ -79,6 +78,10 @@ export default function UserManagerPage() {
         setDeactivatingUser(user);
     };
 
+    const handleActivateUser = (user: User) => {
+        setActivatingUser(user);
+    };
+
     const handleCloseEditDialog = () => {
         setEditingUser(null);
         refetch();
@@ -88,11 +91,27 @@ export default function UserManagerPage() {
         setDeactivatingUser(null);
     };
 
+    const handleCloseActivationDialog = () => {
+        setActivatingUser(null);
+    };
+
     const handleConfirmDeactivate = () => {
         if (deactivatingUser) {
             deactivateMutation.mutate(deactivatingUser.userId, {
                 onSuccess: () => {
                     handleCloseDeactivationDialog();
+                    refetch();
+                }
+            });
+        }
+    };
+
+    const handleConfirmActivate = () => {
+        if (activatingUser) {
+            activateMutation.mutate(activatingUser.userId, {
+                onSuccess: () => {
+                    handleCloseActivationDialog();
+                    refetch();
                 }
             });
         }
@@ -100,7 +119,7 @@ export default function UserManagerPage() {
 
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearchQuery]);
+    }, [debouncedSearchQuery, showInactive]);
 
     return (
         <>
@@ -121,6 +140,15 @@ export default function UserManagerPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         sx={{flexGrow: 1, minWidth: '300px'}}
                     />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showInactive}
+                                onChange={(e) => setShowInactive(e.target.checked)}
+                            />
+                        }
+                        label="Show Inactive"
+                    />
                     <FormControl variant="outlined" sx={{minWidth: 120}}>
                         <InputLabel>Users per page</InputLabel>
                         <Select
@@ -128,90 +156,107 @@ export default function UserManagerPage() {
                             onChange={handleRowsPerPageChange}
                             label="Users per page"
                         >
-                            {[5, 10, 25, 50, 100].map(size =>
-                                <MenuItem key={size} value={size}>{size}</MenuItem>
-                            )}
+                            <MenuItem value={10}>10</MenuItem>
+                            <MenuItem value={25}>25</MenuItem>
+                            <MenuItem value={50}>50</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>
 
-                {isLoading ? (
-                    <Box sx={{display: 'flex', justifyContent: 'center', p: 4}}><CircularProgress/></Box>
-                ) : isError ? (
-                    <Typography color="error" align="center" sx={{p: 4}}>Failed to load users.</Typography>
-                ) : !data || data.content.length === 0 ? (
-                    <Typography align="center" sx={{p: 4}}>No users found.</Typography>
-                ) : (
+                {isLoading && <CircularProgress sx={{alignSelf: 'center'}}/>}
+                {isError && <Typography color="error">Error fetching users.</Typography>}
+                {data && (
                     <>
-                        <List sx={{flexGrow: 1}}>
-                            {data.content.map((user) => (
-                                <ListItem key={user.userId} divider>
-                                    <ListItemAvatar>
-                                        <Avatar sx={{bgcolor: 'secondary.main'}}>
-                                            {user.username.charAt(0).toUpperCase()}
-                                        </Avatar>
-                                    </ListItemAvatar>
-                                    <ListItemText
-                                        primary={user.username}
-                                        secondary={user.email}
-                                    />
-                                    <Button variant="contained" color="primary" sx={{mr: 1}}
-                                            onClick={() => handleViewUser(user.userId)}>
-                                        <Eye/>&nbsp;View
-                                    </Button>
-                                    <Button variant="contained" color="success" sx={{mr: 1}}
-                                            onClick={() => handleEditUser(user)}>
-                                        <Pencil/>&nbsp;Edit
-                                    </Button>
-                                    <Button variant="contained" color="error" sx={{mr: 1}}
-                                            onClick={() => handleDeactivateUser(user)}>
-                                        <Delete/>&nbsp;Deactivate
-                                    </Button>
-                                </ListItem>
-                            ))}
-                        </List>
-                        <Box sx={{display: 'flex', justifyContent: 'center', pt: 2}}>
-                            <Pagination
-                                count={data.totalPages}
-                                page={page}
-                                onChange={handlePageChange}
-                                color="primary"
-                                showFirstButton
-                                showLastButton
-                            />
-                        </Box>
+                        <TableContainer component={Paper}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Username</TableCell>
+                                        <TableCell>Email</TableCell>
+                                        <TableCell>Status</TableCell>
+                                        <TableCell align="right">Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {data.content.map((user) => (
+                                        <TableRow key={user.userId}>
+                                            <TableCell>{user.username}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>{user.active ? 'Active' : 'Inactive'}</TableCell>
+                                            <TableCell align="right">
+                                                <UserActionsMenu
+                                                    user={user}
+                                                    onView={handleViewUser}
+                                                    onEdit={handleEditUser}
+                                                    onDeactivate={handleDeactivateUser}
+                                                    onActivate={handleActivateUser}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            component="div"
+                            count={data.totalElements}
+                            page={page - 1}
+                            onPageChange={handlePageChange}
+                            rowsPerPage={rowsPerPage}
+                            onRowsPerPageChange={() => {
+                            }}
+                            rowsPerPageOptions={[]}
+                        />
                     </>
                 )}
             </Paper>
+
             {editingUser && currentUser && (
-                <Dialog open={!!editingUser} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-                    <DialogTitle>Edit User: {editingUser.username}</DialogTitle>
-                    <DialogContent sx={{pt: '20px !important'}}>
-                        <EditProfileForm
-                            userToEdit={editingUser}
-                            currentUser={currentUser}
-                            onSave={handleCloseEditDialog}
-                            onCancel={handleCloseEditDialog}
-                        />
-                    </DialogContent>
-                </Dialog>
+                <EditUserDialog
+                    open={!!editingUser}
+                    onClose={handleCloseEditDialog}
+                    user={editingUser}
+                    currentUser={currentUser}
+                />
             )}
-            {deactivatingUser && (
-                <Dialog open={!!deactivatingUser} onClose={handleCloseDeactivationDialog}>
-                    <DialogTitle>Confirm Deactivation</DialogTitle>
-                    <DialogContent>
-                        <Typography>
-                            Are you sure you want to deactivate user: {deactivatingUser.username}?
-                        </Typography>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseDeactivationDialog}>Cancel</Button>
-                        <Button onClick={handleConfirmDeactivate} color="error" disabled={deactivateMutation.isPending}>
-                            {deactivateMutation.isPending ? <CircularProgress size={24}/> : 'Deactivate'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
+
+            <Dialog
+                open={!!deactivatingUser}
+                onClose={handleCloseDeactivationDialog}
+            >
+                <DialogTitle>Deactivate User</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to deactivate user {deactivatingUser?.username}?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDeactivationDialog}>Cancel</Button>
+                    <Button onClick={handleConfirmDeactivate} color="error"
+                            disabled={deactivateMutation.isPending}>
+                        {deactivateMutation.isPending ? <CircularProgress size={24}/> : 'Deactivate'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={!!activatingUser}
+                onClose={handleCloseActivationDialog}
+            >
+                <DialogTitle>Deactivate User</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to activate user {activatingUser?.username}?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseActivationDialog}>Cancel</Button>
+                    <Button onClick={handleConfirmActivate} color="error"
+                            disabled={activateMutation.isPending}>
+                        {activateMutation.isPending ? <CircularProgress size={24}/> : 'Activate'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 }
