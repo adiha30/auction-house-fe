@@ -45,9 +45,9 @@ import {useMemo, useState} from 'react';
 import {useCountdown} from '../hooks/useCountdown';
 import {Role} from "../api/authApi.ts";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
-import {deleteListingAsAdmin} from '../api/listingApi.ts';
 import {enqueueSnackbar} from "notistack";
 import {pretty} from "./CreateListingPage.tsx";
+import {deleteListingAsAdmin} from "../api/adminApi.ts";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();

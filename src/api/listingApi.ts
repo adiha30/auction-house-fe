@@ -122,6 +122,3 @@ export const deleteImage = async (id: string) =>
 
 export const createListing = (body: CreateListingPayload) =>
     api.post(listingsPath, body).then((res) => res.data);
-
-export const deleteListingAsAdmin = (id: string, reason: string) =>
-    api.delete(`/admin/listings/${id}`, {data: {reason}});

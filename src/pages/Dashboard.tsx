@@ -3,6 +3,7 @@ import {useState} from "react";
 import ProfilePage from "./ProfilePage.tsx";
 import MyListingsPage from "./MyListingsPage.tsx";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
+import UserManagerPage from "./UserManagerPage.tsx";
 
 export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState<'profile' | 'listings' | 'disputes' | 'userManager'>('profile');
@@ -43,7 +44,7 @@ export default function Dashboard() {
             <Box flexGrow={1}>
                 {selectedTab === 'profile' ? <ProfilePage/> :
                     selectedTab === 'listings' ? <MyListingsPage/> :
-                        selectedTab === 'userManager' ? <div>User Manager Section (Coming Soon)</div> :
+                        selectedTab === 'userManager' ? <UserManagerPage /> :
                             selectedTab === 'disputes' ? <div>Disputes Section (Coming Soon)</div> :
                                 null}
             </Box>
