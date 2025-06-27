@@ -237,7 +237,7 @@ export default function ListingDetailsPage() {
                             )}
                         </Stack>
                     )}
-                    {listing.status === 'OPEN' && token && !isSeller && (
+                    {listing.status === 'OPEN' && token && !isSeller && !isAdmin && (
                         <BidForm highestBid={highestBid} minIncrement={minIncrement} buyNowPrice={listing.buyNowPrice}
                                  createBid={createBid}/>
                     )}
@@ -265,7 +265,7 @@ export default function ListingDetailsPage() {
                                 </>
                             )}
 
-                            {!isSeller && token && (
+                            {!isSeller && token && !isAdmin && (
                                 <>
                                     {listing.status === 'OPEN' && (
                                         <OfferForm initialAmount={highestBid + 1} createOffer={createOffer}/>

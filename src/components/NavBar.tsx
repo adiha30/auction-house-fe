@@ -2,6 +2,7 @@ import {AppBar, Button, Toolbar, Typography} from '@mui/material';
 import {Link as RouterLink, useLocation, useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/AuthContext';
 import NotificationMenu from "./NotificationMenu.tsx";
+import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 
 const hideOn = ['/login', '/register'];
 
@@ -9,6 +10,8 @@ export default function NavBar() {
     const {token, setToken} = useAuth()!;
     const nav = useNavigate();
     const {pathname} = useLocation();
+    const {data: user} = useCurrentUser();
+    const isAdmin = user?.role === 'ADMIN';
 
     if (hideOn.includes(pathname)) return null;
 
@@ -28,8 +31,10 @@ export default function NavBar() {
                 {token && (
                     <>
                         <Button component={RouterLink} to="/listings" color="inherit">Listings</Button>
-                        <Button component={RouterLink} to="/create" color="inherit">Create</Button>
-                        <Button component={RouterLink} to="/dashboard" color="inherit">Profile</Button>
+                        {!isAdmin && (
+                            <Button component={RouterLink} to="/create" color="inherit">Create</Button>
+                        )}
+                        <Button component={RouterLink} to="/dashboard" color="inherit">Settings</Button>
                         <NotificationMenu/>
                         <Button onClick={handleLogout} color="inherit">Logout</Button>
                     </>

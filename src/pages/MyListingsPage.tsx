@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Avatar,
     Box,
@@ -31,6 +31,9 @@ import GridViewIcon from "@mui/icons-material/GridView";
 import SortIcon from "@mui/icons-material/Sort";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {toTitleCase} from "../utils/text.ts";
+import {useCurrentUser} from "../hooks/useCurrentUser.ts";
+import {Role} from "../api/authApi.ts";
+import {enqueueSnackbar} from "notistack";
 
 enum ViewMode {
     LIST = "list",
@@ -60,6 +63,15 @@ const MyListingsPage: React.FC = () => {
     const [soldFilter, setSoldFilter] = useState<string>("all");
 
     const navigate = useNavigate();
+    const {data: user} = useCurrentUser();
+    const isAdmin = user?.role === Role.ADMIN;
+
+    useEffect(() => {
+        if (isAdmin) {
+            enqueueSnackbar("Admins do not have a 'My Listings' page.", {variant: 'info'});
+            navigate('/');
+        }
+    }, [isAdmin, navigate]);
 
     const {
         data: activeListings,
@@ -68,6 +80,7 @@ const MyListingsPage: React.FC = () => {
     } = useQuery<ListingDetails[]>({
         queryKey: ["myFullListings", "active"],
         queryFn: getUserOpenListings,
+        enabled: !isAdmin,
     });
 
     const {
@@ -77,6 +90,7 @@ const MyListingsPage: React.FC = () => {
     } = useQuery<ListingDetails[]>({
         queryKey: ["myFullListings", "inactive"],
         queryFn: getUserListings,
+        enabled: !isAdmin,
     });
 
     const getImageUrl = (id?: string) =>
@@ -151,6 +165,10 @@ const MyListingsPage: React.FC = () => {
 
     const handleTabChange = (_: React.SyntheticEvent, v: number) => setTab(v);
     const handleClick = (id: string) => navigate(`/listings/${id}`);
+
+    if (isAdmin) {
+        return <Box sx={{p: 4, textAlign: 'center'}}><CircularProgress/></Box>;
+    }
 
     const renderList = () => (
         <List>

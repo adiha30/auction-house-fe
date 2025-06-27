@@ -23,6 +23,7 @@ export default function EditProfilePage() {
     const {data: user} = useCurrentUser();
     const update = useUpdateUser();
     const nav = useNavigate();
+    const isAdmin = user?.role === 'ADMIN';
 
     if (!user) return null;
 
@@ -70,12 +71,14 @@ export default function EditProfilePage() {
                         delete payload.password;
                     }
 
-                    if (payload.ccInfo?.ccNumber) {
-                        payload.ccInfo.ccNumber = payload.ccInfo.ccNumber.replace(/-/g, '');
-                    } else {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-expect-error
-                        delete payload.ccInfo;
+                    if (!isAdmin) {
+                        if (payload.ccInfo?.ccNumber) {
+                            payload.ccInfo.ccNumber = payload.ccInfo.ccNumber.replace(/-/g, '');
+                        } else {
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-expect-error
+                            delete payload.ccInfo;
+                        }
                     }
 
                     update.mutate(payload, {onSuccess: () => nav('/dashboard')});
@@ -108,41 +111,45 @@ export default function EditProfilePage() {
                                 error={touched.password && !!errors.password}
                                 helperText={touched.password && errors.password}
                             />
-                            <TextField
-                                fullWidth margin="dense"
-                                label="Card Number"
-                                name="ccInfo.ccNumber"
-                                value={values.ccInfo?.ccNumber || ''}
-                                onChange={(e) => {
-                                    const formatted = formatCreditCard(e.target.value);
-                                    setFieldValue('ccInfo.ccNumber', formatted);
-                                }}
-                                inputProps={{maxLength: 19}}
-                                error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
-                                helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}
-                            />
-                            <TextField
-                                fullWidth margin="dense"
-                                label="Expiration Date (MM/YY)"
-                                name="ccInfo.ccExpiry"
-                                value={values.ccInfo?.ccExpiry || ''}
-                                onChange={(e) => {
-                                    const formatted = formatExpiryDate(e.target.value);
-                                    setFieldValue('ccInfo.ccExpiry', formatted);
-                                }}
-                                inputProps={{maxLength: 5}}
-                                error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
-                                helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}
-                            />
-                            <Field
-                                as={TextField}
-                                fullWidth margin="dense"
-                                label="CVC"
-                                name="ccInfo.ccCvc"
-                                inputProps={{maxLength: 4}}
-                                error={touched.ccInfo?.ccCvc && !!errors.ccInfo?.ccCvc}
-                                helperText={touched.ccInfo?.ccCvc && errors.ccInfo?.ccCvc}
-                            />
+                            {!isAdmin && (
+                                <>
+                                    <TextField
+                                        fullWidth margin="dense"
+                                        label="Card Number"
+                                        name="ccInfo.ccNumber"
+                                        value={values.ccInfo?.ccNumber || ''}
+                                        onChange={(e) => {
+                                            const formatted = formatCreditCard(e.target.value);
+                                            setFieldValue('ccInfo.ccNumber', formatted);
+                                        }}
+                                        inputProps={{maxLength: 19}}
+                                        error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
+                                        helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}
+                                    />
+                                    <TextField
+                                        fullWidth margin="dense"
+                                        label="Expiration Date (MM/YY)"
+                                        name="ccInfo.ccExpiry"
+                                        value={values.ccInfo?.ccExpiry || ''}
+                                        onChange={(e) => {
+                                            const formatted = formatExpiryDate(e.target.value);
+                                            setFieldValue('ccInfo.ccExpiry', formatted);
+                                        }}
+                                        inputProps={{maxLength: 5}}
+                                        error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
+                                        helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}
+                                    />
+                                    <Field
+                                        as={TextField}
+                                        fullWidth margin="dense"
+                                        label="CVC"
+                                        name="ccInfo.ccCvc"
+                                        inputProps={{maxLength: 4}}
+                                        error={touched.ccInfo?.ccCvc && !!errors.ccInfo?.ccCvc}
+                                        helperText={touched.ccInfo?.ccCvc && errors.ccInfo?.ccCvc}
+                                    />
+                                </>
+                            )}
 
                             <Button sx={{mt: 2}} variant="contained" type="submit" disabled={update.isPending}>
                                 Save
