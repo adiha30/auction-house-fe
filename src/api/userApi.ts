@@ -14,3 +14,6 @@ export const getUser = (id: string) =>
 
 export const updateUser = (id: string, body: Partial<User>) =>
     api.put<string>(`/users/${id}`, body).then(res => res.data);
+
+export const deactivateUser = (id: string) =>
+    api.delete<string>(`/users/${id}`).then(res => res.data);

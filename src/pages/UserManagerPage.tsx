@@ -5,6 +5,7 @@ import {
     Button,
     CircularProgress,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
     FormControl,
@@ -26,6 +27,7 @@ import {useCurrentUser} from '../hooks/useCurrentUser';
 import {Delete, Edit as Pencil, Visibility as Eye} from "@mui/icons-material";
 import {EditProfileForm} from './EditProfilePage';
 import {User} from "../api/userApi.ts";
+import {useDeactivateUser} from "../hooks/useDeactivateUser.ts";
 
 const useDebounce = (value: string, delay: number) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -45,6 +47,7 @@ export default function UserManagerPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearchQuery = useDebounce(searchQuery, 500);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [deactivatingUser, setDeactivatingUser] = useState<User | null>(null);
 
     const {data, isLoading, isError, refetch} = useUsers({
         page: page - 1,
@@ -52,6 +55,8 @@ export default function UserManagerPage() {
         query: debouncedSearchQuery,
         isAdmin: currentUser?.role === 'ADMIN',
     });
+
+    const deactivateMutation = useDeactivateUser();
 
     const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
@@ -70,13 +75,27 @@ export default function UserManagerPage() {
         setEditingUser(user);
     }
 
-    const handleDeactivateUser = (userId: string) => {
-        console.log(`Deactivate user with ID: ${userId}`);
+    const handleDeactivateUser = (user: User) => {
+        setDeactivatingUser(user);
     };
 
-    const handleCloseDialog = () => {
+    const handleCloseEditDialog = () => {
         setEditingUser(null);
         refetch();
+    };
+
+    const handleCloseDeactivationDialog = () => {
+        setDeactivatingUser(null);
+    };
+
+    const handleConfirmDeactivate = () => {
+        if (deactivatingUser) {
+            deactivateMutation.mutate(deactivatingUser.userId, {
+                onSuccess: () => {
+                    handleCloseDeactivationDialog();
+                }
+            });
+        }
     };
 
     useEffect(() => {
@@ -145,7 +164,7 @@ export default function UserManagerPage() {
                                         <Pencil/>&nbsp;Edit
                                     </Button>
                                     <Button variant="contained" color="error" sx={{mr: 1}}
-                                            onClick={() => handleDeactivateUser(user.userId)}>
+                                            onClick={() => handleDeactivateUser(user)}>
                                         <Delete/>&nbsp;Deactivate
                                     </Button>
                                 </ListItem>
@@ -165,16 +184,32 @@ export default function UserManagerPage() {
                 )}
             </Paper>
             {editingUser && currentUser && (
-                <Dialog open={!!editingUser} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+                <Dialog open={!!editingUser} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
                     <DialogTitle>Edit User: {editingUser.username}</DialogTitle>
                     <DialogContent sx={{pt: '20px !important'}}>
                         <EditProfileForm
                             userToEdit={editingUser}
                             currentUser={currentUser}
-                            onSave={handleCloseDialog}
-                            onCancel={handleCloseDialog}
+                            onSave={handleCloseEditDialog}
+                            onCancel={handleCloseEditDialog}
                         />
                     </DialogContent>
+                </Dialog>
+            )}
+            {deactivatingUser && (
+                <Dialog open={!!deactivatingUser} onClose={handleCloseDeactivationDialog}>
+                    <DialogTitle>Confirm Deactivation</DialogTitle>
+                    <DialogContent>
+                        <Typography>
+                            Are you sure you want to deactivate user: {deactivatingUser.username}?
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleCloseDeactivationDialog}>Cancel</Button>
+                        <Button onClick={handleConfirmDeactivate} color="error" disabled={deactivateMutation.isPending}>
+                            {deactivateMutation.isPending ? <CircularProgress size={24}/> : 'Deactivate'}
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             )}
         </>
