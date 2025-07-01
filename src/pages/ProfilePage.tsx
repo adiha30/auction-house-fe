@@ -16,6 +16,7 @@ import {useAuth} from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
 import axios from '../api/axios';
 import {enqueueSnackbar} from 'notistack';
+import {pretty} from "./CreateListingPage.tsx";
 
 export default function ProfilePage() {
     const {data: user, isLoading, error} = useCurrentUser();
@@ -51,7 +52,7 @@ export default function ProfilePage() {
                 </Typography>
                 <Typography><b>Username:</b> {user.username}</Typography>
                 <Typography><b>Email:</b> {user.email}</Typography>
-                <Typography><b>Role:</b> {user.role}</Typography>
+                <Typography><b>Role:</b> {pretty(user.role)}</Typography>
                 {user.ccInfo?.ccNumber && (
                     <Typography>
                         <b>Card:</b> **** **** **** {user.ccInfo.ccNumber.slice(-4)}

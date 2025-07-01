@@ -26,9 +26,10 @@ import {deleteImage, uploadsPath} from "../api/listingApi.ts";
 
 export const pretty = (s: string) =>
     s
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
         .toLowerCase()
         .split(/[_\s]+/)
-        .map((w) => w[0].toUpperCase() + w.slice(1))
+        .map((w) => w[0]?.toUpperCase() + w.slice(1))
         .join(' ');
 
 function DynamicField({meta}: { meta: FieldMetadata }) {

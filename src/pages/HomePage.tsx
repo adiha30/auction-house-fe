@@ -27,6 +27,7 @@ export default function HomePage() {
 
     const {token} = useAuth()!;
     const {data: user, isLoading: userLoading} = useCurrentUser();
+    const isAdmin = user?.role === 'ADMIN';
     const {data: userListings, isLoading: listingsLoading} = useUserListings();
     const {data: categories = []} = useCategories();
     const {data: activeBids = []} = useMyActiveBids(!!token);
@@ -65,7 +66,7 @@ export default function HomePage() {
                                 <>
                                     <Box textAlign="center" mt={4}>
                                         <Typography variant="h4" fontWeight={600}>
-                                            {`Welcome back, ${toTitleCase(user?.username ?? '')}! Ready to win today?`}
+                                            {`Welcome back, ${toTitleCase(user?.username ?? '')}! ${!isAdmin ? "Ready to win today?" : ''}`}
                                         </Typography>
 
                                         <QuickAccessBar
@@ -73,6 +74,7 @@ export default function HomePage() {
                                             areBids={!!activeBids.length}
                                             onWatchlist={() => scrollTo(watchRef)}
                                             areWatches={!!watches?.length}
+                                            isAdmin={isAdmin}
                                         />
 
                                         <CategoriesShowcase/>

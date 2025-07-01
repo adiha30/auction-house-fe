@@ -11,7 +11,7 @@ export interface ListingSummary {
     startPrice: number;
     buyNowPrice?: number;
     endTime: string;
-    status: 'OPEN' | 'SOLD' | 'CLOSED';
+    status: 'OPEN' | 'SOLD' | 'CLOSED' | 'REMOVED';
     finalPrice: number;
     seller: { userId: string; username: string };
     latestBidAmount?: number | null;
