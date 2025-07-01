@@ -1,0 +1,187 @@
+import {User} from "../api/userApi.ts";
+import {ListingDetails} from "../api/listingApi.ts";
+import {useSellerHistory} from "../hooks/useSellerHistory.ts";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {enqueueSnackbar} from "notistack";
+import {
+    Avatar,
+    Box,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    MenuItem,
+    Pagination,
+    Paper,
+    TextField,
+    Typography
+} from "@mui/material";
+import {deleteListingAsAdmin} from "../api/adminApi.ts";
+import {useState} from "react";
+
+interface ViewUserDialogProps {
+    open: boolean;
+    onClose: () => void;
+    user: User;
+}
+
+const getPriceInfo = (listing: ListingDetails) => {
+    switch (listing.status) {
+        case "OPEN":
+            return `Current Price: $${listing.currentPrice.toLocaleString()}`;
+        case "SOLD":
+            return `Sold for: $${listing.currentPrice.toLocaleString()}`;
+        case "REMOVED":
+            return `Removed`;
+        case "CLOSED":
+            return `Unsold`;
+    }
+}
+
+const reasons = [
+    "Inappropriate", "Spam", "Against community guidelines",
+    "Hate speech", "Harassment", "Scam", "Illegal content", "Other"
+];
+
+export default function ViewUserDialog({open, onClose, user}: ViewUserDialogProps) {
+    console.log('[ViewUserDialog] Received user prop:', user);
+    const [page, setPage] = useState(1);
+    const {data: listingsPage, isLoading, isError, error} = useSellerHistory(user?.userId, page - 1, 5);
+    const queryClient = useQueryClient();
+
+    if (isError) {
+        console.error('[ViewUserDialog] Error fetching seller history:', error);
+    }
+
+    const [removingListing, setRemovingListing] = useState<ListingDetails | null>(null);
+    const [reason, setReason] = useState('Inappropriate');
+
+    const removeMutation = useMutation({
+        mutationFn: ({listingId, reason}: {
+            listingId: string,
+            reason: string
+        }) => deleteListingAsAdmin(listingId, reason),
+        onSuccess: () => {
+            enqueueSnackbar('Listing removed successfully', {variant: 'success'});
+            queryClient.invalidateQueries({queryKey: ['sellerListings', user.userId]});
+            setRemovingListing(null);
+        },
+        onError: (error) => {
+            enqueueSnackbar(`Failed to remove listing: ${error.message}`, {variant: 'error'});
+        }
+    });
+
+    const handleConfirmRemove = () => {
+        if (removingListing) {
+            removeMutation.mutate({listingId: removingListing.listingId, reason});
+        }
+    };
+
+    const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+        setPage(value);
+    };
+
+    return (
+        <>
+            <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+                <DialogTitle>User Details: {user.username}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1"><b>Email:</b> {user.email}</Typography>
+                    <Typography variant="body1"><b>Role:</b> {user.role}</Typography>
+                    <Typography variant="body1"><b>Status:</b> {user.active ? 'Active' : 'Inactive'}</Typography>
+
+                    <Typography variant="h6" sx={{mt: 3, mb: 1}}>Listings History:</Typography>
+                    {isLoading && <CircularProgress/>}
+                    {isError && <Typography color="error">Failed to load listings.</Typography>}
+                    {listingsPage && (
+                        <Paper variant="outlined">
+                            <List>
+                                {listingsPage.content.length === 0 &&
+                                    <ListItem><ListItemText primary="No listings found."/></ListItem>}
+                                {listingsPage.content.map((listing) => (
+                                    <ListItem key={listing.listingId} divider>
+                                        <ListItemAvatar>
+                                            <Avatar variant="square" src={listing.item.imageIds[0]}
+                                                    sx={{width: 60, height: 60, mr: 2}}/>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            primary={listing.item.title}
+                                            secondary={
+                                                <>
+                                                    <Typography component="span" variant="body2" color="text.primary">
+                                                        Status: {listing.status}
+                                                    </Typography>
+                                                    <br/>
+                                                    {getPriceInfo(listing)}
+                                                </>
+                                            }
+                                        />
+
+                                        {listing.status === "OPEN" && (
+                                            <Button
+                                                variant="outlined"
+                                                color="error"
+                                                size="small"
+                                                onClick={() => setRemovingListing(listing)}
+                                            >
+                                                Remove
+                                            </Button>
+                                        )}
+                                    </ListItem>
+                                ))}
+                            </List>
+                            {listingsPage.totalPages > 1 && (
+                                <Box sx={{display: 'flex', justifyContent: 'center', p: 2}}>
+                                    <Pagination
+                                        count={listingsPage.totalPages}
+                                        page={page}
+                                        onChange={handlePageChange}
+                                        color="primary"
+                                    />
+                                </Box>
+                            )}
+                        </Paper>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!removingListing} onClose={() => setRemovingListing(null)}>
+                <DialogTitle>Remove Listing?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Select a reason for removing the listing "{removingListing?.item.title}". This action cannot be
+                        undone.
+                    </DialogContentText>
+                    <TextField
+                        select
+                        fullWidth
+                        label="Reason"
+                        margin="dense"
+                        value={reason}
+                        onChange={e => setReason(e.target.value)}
+                    >
+                        {reasons.map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+                    </TextField>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setRemovingListing(null)}>Cancel</Button>
+                    <Button
+                        color="error"
+                        variant="contained"
+                        disabled={removeMutation.isPending}
+                        onClick={handleConfirmRemove}
+                    >
+                        {removeMutation.isPending ? <CircularProgress size={24}/> : 'Confirm Removal'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    );
+}

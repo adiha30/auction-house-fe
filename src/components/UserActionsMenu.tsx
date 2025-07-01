@@ -4,7 +4,7 @@ import {User} from "../api/userApi.ts";
 
 interface UserActionsMenuProps {
     user: User;
-    onView: (userId: string) => void;
+    onView: (user: User) => void;
     onEdit: (user: User) => void;
     onDeactivate: (user: User) => void;
     onActivate: (user: User) => void;
@@ -13,7 +13,7 @@ interface UserActionsMenuProps {
 export default function UserActionsMenu({user, onView, onEdit, onDeactivate, onActivate}: UserActionsMenuProps) {
     return (
         <>
-            <Button variant="contained" color="primary" sx={{mr: 1.5}} onClick={() => onView(user.userId)}>
+            <Button variant="contained" color="primary" sx={{mr: 1.5}} onClick={() => onView(user)}>
                 <Eye/>&nbsp;View
             </Button>
             <Button variant="contained" color="inherit" sx={{mr: 1.5}} onClick={() => onEdit(user)}>

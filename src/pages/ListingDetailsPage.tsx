@@ -58,9 +58,9 @@ export default function ListingDetailsPage() {
     const nav = useNavigate();
 
     const [rmOpen, setRmOpen] = useState(false);
-    const [reason, setReason] = useState('Innappropriate');
+    const [reason, setReason] = useState('Inappropriate');
     const reasons = [
-        "Innappropriate", "Spam", "Against community guidelines",
+        "Inappropriate", "Spam", "Against community guidelines",
         "Hate speech", "Harassment", "Scam", "Illegal content", "Other"
     ]
 
