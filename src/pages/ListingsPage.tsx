@@ -262,12 +262,12 @@ export default function ListingsPage() {
                         {displayed.map((listing) => (
                             <Grid item key={listing.listingId} xs={12} sm={6} md={4} lg={3}>
                                 <ListingCard listing={listing} token={token} isSeller={(() => {
-                                  if (!token) return false;
-                                  try {
-                                    return listing.seller.userId === extractUserId(token);
-                                  } catch {
-                                    return false;
-                                  }
+                                    if (!token) return false;
+                                    try {
+                                        return listing.seller.userId === extractUserId(token);
+                                    } catch {
+                                        return false;
+                                    }
                                 })()}/>
                             </Grid>
                         ))}

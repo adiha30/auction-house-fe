@@ -12,6 +12,6 @@ export const useCreateOffer = (listingId: string) => {
             queryClient.invalidateQueries({queryKey: ["offers", listingId]});
         },
         onError: () =>
-            enqueueSnackbar("Could not send offer - you can't offer the same amount twice and must have a valid credit card", { variant: "error" }),
+            enqueueSnackbar("Could not send offer - you can't offer the same amount twice and must have a valid credit card", {variant: "error"}),
     });
 };

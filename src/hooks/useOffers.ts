@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { getOffers, OfferResponse } from "../api/offerApi";
+import {useQuery} from "@tanstack/react-query";
+import {getOffers, OfferResponse} from "../api/offerApi";
 
 export const useOffers = (listingId: string, enabled = true) =>
     useQuery<OfferResponse[]>({

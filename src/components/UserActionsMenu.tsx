@@ -19,11 +19,13 @@ export default function UserActionsMenu({user, onView, onEdit, onDeactivate, onA
             <Button variant="contained" color="inherit" sx={{mr: 1.5}} onClick={() => onEdit(user)}>
                 <Pencil/>&nbsp;Edit
             </Button>
-            {user.active && (<Button variant="contained" color="error" sx={{mr: 1.5, width: "150px"}} onClick={() => onDeactivate(user)}>
+            {user.active && (<Button variant="contained" color="error" sx={{mr: 1.5, width: "150px"}}
+                                     onClick={() => onDeactivate(user)}>
                 <Delete/>&nbsp;Deactivate
             </Button>)}
-            {!user.active && (<Button variant="contained" color="success" sx={{mr: 1.5, width: "150px"}} onClick={() => onActivate(user)}>
-                <RestartAlt />&nbsp;Activate
+            {!user.active && (<Button variant="contained" color="success" sx={{mr: 1.5, width: "150px"}}
+                                      onClick={() => onActivate(user)}>
+                <RestartAlt/>&nbsp;Activate
             </Button>)}
         </>
     );

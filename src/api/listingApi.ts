@@ -48,7 +48,7 @@ export interface ItemDto {
 export const getAllListings = async (category?: string, page = 0, size = 40) => {
     return await api.get<ListingSummary[]>(
         listingsPath,
-        {params: { ...(category && {category}), page, size }},
+        {params: {...(category && {category}), page, size}},
     ).then(res =>
         res.data.map(listing => ({
             ...listing,
