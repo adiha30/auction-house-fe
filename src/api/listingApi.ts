@@ -5,6 +5,11 @@ import {resolveImageUrls} from "../utils/imageUrls.ts";
 export const listingsPath = `/listings`;
 export const uploadsPath = `/uploads`;
 
+export interface PaginatedResponse<T> {
+    content: T[];
+    totalPages: number;
+}
+
 export interface ListingSummary {
     listingId: string;
     title: string;
@@ -114,7 +119,23 @@ export const getFeaturedListings = async (limit = 5) =>
 
 export const searchListings = (query: string, sort = 'recent', limit = 40) =>
     api.get<ListingSummary[]>(`${listingsPath}/search`, {params: {query, sort, limit}})
-        .then(res => res.data)
+        .then(res => res.data);
+
+export const getUserWonListings = (sort: 'recent' | 'title' = 'recent', page: number = 0, limit: number = 10, order: 'asc' | 'desc' = "desc") =>
+    api.get<ListingDetails[]>(`${listingsPath}/won`, {params: {sort, page, limit, order}})
+        .then((res): PaginatedResponse<ListingDetails> => {
+            const listings = res.data.map(listing => ({
+                ...listing,
+                item: {
+                    ...listing.item,
+                    imageIds: resolveImageUrls(listing.item.imageIds)
+                },
+            }));
+            return {
+                content: listings,
+                totalPages: 1, // Assume a single page as the API doesn't provide total.
+            };
+        });
 
 export const deleteImage = async (id: string) =>
     await api.delete(`${uploadsPath}/${id}`);
