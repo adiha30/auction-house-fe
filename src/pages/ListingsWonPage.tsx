@@ -33,6 +33,10 @@ import {useMyWonListings} from "../hooks/useMyWonListings.ts";
 import {formatDistanceToNow} from "date-fns";
 import {pretty} from "./CreateListingPage.tsx";
 import {ListingDetails} from "../api/listingApi.ts";
+import {DisputeReason} from "../api/disputeApi.ts";
+import {useCreateDispute} from "../hooks/useDisputes.ts";
+import {Create} from "@mui/icons-material";
+import CreateDisputeModal from "../components/CreateDisputeModal.tsx";
 
 enum ViewMode {
     LIST = "list",
@@ -51,11 +55,14 @@ const ListingsWonPage: React.FC = () => {
     const [sortField, setSortField] = useState<SortField>(SortField.TITLE);
     const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
     const [page, setPage] = useState(1);
+    const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+    const [selectedListing, setSelectedListing] = useState<ListingDetails | null>(null);
     const limit = 10;
 
     const navigate = useNavigate();
     const {data: user} = useCurrentUser();
     const isAdmin = user?.role === Role.ADMIN;
+    const createDisputeMutation = useCreateDispute();
 
     useEffect(() => {
         if (isAdmin) {
@@ -79,10 +86,23 @@ const ListingsWonPage: React.FC = () => {
         return <Box sx={{p: 4, textAlign: 'center'}}><CircularProgress/></Box>;
     }
 
-    const handleDisputeClick = (e: React.MouseEvent) => {
+    const handleDisputeClick = (e: React.MouseEvent, listing: ListingDetails) => {
         e.stopPropagation();
-        enqueueSnackbar("Dispute functionality is not implemented yet.", {variant: 'info'});
-    }
+        setSelectedListing(listing);
+        setDisputeModalOpen(true);
+    };
+
+    const handleDisputeSubmit = (reason: DisputeReason, details: string) => {
+        if (selectedListing && user) {
+            createDisputeMutation.mutate({
+                listingId: selectedListing.listingId,
+                winnerId: user.userId,
+                sellerId: selectedListing.seller.userId,
+                reason,
+                details
+            });
+        }
+    };
 
     const getListingWonDetails = (listing: ListingDetails) => (
         <>
@@ -121,7 +141,7 @@ const ListingsWonPage: React.FC = () => {
                             <Button
                                 variant="outlined"
                                 size="small"
-                                onClick={handleDisputeClick}>
+                                onClick={(e) => handleDisputeClick(e, listing)}>
                                 Open Dispute
                             </Button>
                         )}
@@ -247,7 +267,7 @@ const ListingsWonPage: React.FC = () => {
             <Box sx={{mt: 2}}>
                 {isLoading ? (
                     <CircularProgress/>
-                ) : isError ? (
+                ) : isError && wonListingsData?.message ? (
                     <Typography color="error">Failed to load.</Typography>
                 ) : wonListings === undefined || wonListings.length === 0 ? (
                     <Box sx={{textAlign: 'center', mt: 4}}>
@@ -271,6 +291,14 @@ const ListingsWonPage: React.FC = () => {
                     </>
                 )}
             </Box>
+            {selectedListing && (
+                <CreateDisputeModal
+                    open={disputeModalOpen}
+                    onClose={() => setDisputeModalOpen(false)}
+                    listing={selectedListing}
+                    onSubmit={handleDisputeSubmit}
+                />
+            )}
         </Box>
     );
 };

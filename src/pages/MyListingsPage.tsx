@@ -375,7 +375,7 @@ const MyListingsPage: React.FC = () => {
             <Box sx={{mt: 2}}>
                 {isLoading ? (
                     <CircularProgress/>
-                ) : isError ? (
+                ) : isError && (tab === 0 ? errorActive : errorInactive) ? (
                     <Typography color="error">Failed to load.</Typography>
                 ) : processedListings.length === 0 ? (
                     <Box sx={{textAlign: 'center', mt: 4}}>
