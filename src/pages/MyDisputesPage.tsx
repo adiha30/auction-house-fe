@@ -135,11 +135,17 @@ const MyDisputesPage: React.FC = () => {
     const [page, setPage] = useState(1);
     const limit = 10;
 
-    const {data: user} = useCurrentUser();
-    const {data: disputes, isLoading, isError, error} = useMyDisputes(user?.userId ?? "", page - 1, limit);
+    const {data: user, isLoading: isUserLoading} = useCurrentUser();
+    const {
+        data: disputesData,
+        isLoading: isDisputesLoading,
+        isError,
+        error
+    } = useMyDisputes(user?.userId ?? "", page - 1, limit);
 
-    // Backend does not support pagination for this endpoint yet, so we disable it.
-    const totalPages = 0;
+    const disputes = disputesData?.content;
+    const totalPages = disputesData?.totalPages ?? 0;
+    const isLoading = isUserLoading || isDisputesLoading;
 
     const renderList = () => (
         <List>

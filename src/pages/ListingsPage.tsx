@@ -168,7 +168,7 @@ export default function ListingsPage() {
                         userSelect: 'none',
                         '&::-webkit-scrollbar': {display: 'none'},
                         '-ms-overflow-style': 'none',
-                        'scrollbar-width': 'none',
+                        'scrollbarWidth': 'none',
                     }}
                 >
                     <Stack direction="row" spacing={{xs: 2, sm: 4}} justifyContent="flex-start" flexWrap="nowrap">

@@ -33,6 +33,11 @@ export interface Dispute {
     createdAt: string;
 }
 
+export interface PaginatedDisputes {
+    content: Dispute[];
+    totalPages: number;
+}
+
 export interface CreateDisputeRequest {
     listingId: string;
     winnerId: string;
@@ -53,14 +58,22 @@ export const getDispute = async (disputeId: string): Promise<Dispute> => {
     return response.data;
 }
 
-export const getMyDisputes = async (userId: string, page: number, size: number): Promise<Dispute[]> => {
+export const getMyDisputes = async (userId: string, page: number, size: number): Promise<PaginatedDisputes> => {
     const response = await axios.get<Dispute[]>(`/disputes/user/${userId}`, {
         params: {
             page,
             size
         }
     });
-    return response.data;
+    const disputes = response.data;
+    // Since the API returns an array, we'll construct the paginated response.
+    // We can guess the total pages for basic pagination.
+    const totalPages = disputes.length < size ? page + 1 : page + 2;
+
+    return {
+        content: disputes,
+        totalPages: totalPages,
+    };
 };
 
 export const addDisputeMessage = async (disputeId: string, message: string, senderId: string): Promise<void> =>
