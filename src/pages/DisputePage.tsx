@@ -1,6 +1,5 @@
-import React from 'react';
-import {Link, useParams} from 'react-router-dom';
-import {useDispute} from '../hooks/useDisputes.ts';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {useParams} from 'react-router-dom';
 import {
     Box,
     Button,
@@ -8,27 +7,74 @@ import {
     CardActions,
     CardContent,
     CardMedia,
-    Chip,
     CircularProgress,
     Divider,
     Grid,
+    Paper,
+    Skeleton,
+    Stack,
+    TextField,
     Typography
 } from '@mui/material';
-import {useUser} from "../hooks/useUser.ts";
+import {Send} from '@mui/icons-material';
+import {useAddDisputeMessage, useDispute} from '../hooks/useDisputes.ts';
+import {useCurrentUser} from '../hooks/useCurrentUser';
+import {useListing} from '../hooks/useListing';
+import {useUser} from '../hooks/useUser';
+import {DisputeMessage} from '../api/disputeApi';
 import {pretty} from "./CreateListingPage.tsx";
-import {useListing} from "../hooks/useListings.ts";
-import {toTitleCase} from "../utils/text.ts";
-import {useAuth} from '../context/AuthContext';
 
+const DisputeMessageItem: React.FC<{ message: DisputeMessage, isCurrentUser: boolean }> = ({
+                                                                                               message,
+                                                                                               isCurrentUser
+                                                                                           }) => {
+    const {data: sender} = useUser(message.senderId);
+    return (
+        <Box sx={{
+            display: 'flex',
+            justifyContent: isCurrentUser ? 'flex-end' : 'flex-start',
+            mb: 1,
+        }}>
+            <Paper
+                variant="outlined"
+                sx={{
+                    p: 1.5,
+                    bgcolor: isCurrentUser ? 'primary.light' : 'grey.200',
+                    color: isCurrentUser ? 'primary.contrastText' : 'inherit',
+                    maxWidth: '70%',
+                    wordBreak: 'break-word',
+                }}
+            >
+                <Typography variant="body2" sx={{fontWeight: 'bold'}}>{pretty(sender?.username || 'User')}</Typography>
+                <Typography variant="body1">{message.message}</Typography>
+            </Paper>
+        </Box>
+    );
+};
 
 const DisputePage: React.FC = () => {
     const {disputeId} = useParams<{ disputeId: string }>();
     const {data: dispute, isLoading, isError} = useDispute(disputeId!);
-    const {user: currentUser} = useAuth();
+    const {data: currentUser} = useCurrentUser();
+    const addMessageMutation = useAddDisputeMessage(disputeId!);
+    const [newMessage, setNewMessage] = useState('');
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-    const {data: listing} = useListing(dispute?.listingId, !!dispute?.listingId);
-    const {data: winner} = useUser(dispute?.winnerId);
-    const {data: seller} = useUser(dispute?.sellerId);
+    const {data: listing, isLoading: isListingLoading} = useListing(dispute?.listingId);
+    const {data: winner, isLoading: isWinnerLoading} = useUser(dispute?.winnerId);
+    const {data: seller, isLoading: isSellerLoading} = useUser(dispute?.sellerId);
+
+    const sortedMessages = useMemo(
+        () =>
+            dispute?.disputeMessages
+                ? [...dispute.disputeMessages].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                : [],
+        [dispute?.disputeMessages]
+    );
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+    }, [sortedMessages]);
 
     if (isLoading) {
         return <Box sx={{display: 'flex', justifyContent: 'center', mt: 4}}><CircularProgress/></Box>;
@@ -38,100 +84,101 @@ const DisputePage: React.FC = () => {
         return <Typography color="error" sx={{textAlign: 'center', mt: 4}}>Failed to load dispute details.</Typography>;
     }
 
-    const handleResolveDispute = () => {
-        // Placeholder for dispute resolution logic
-        console.log("Resolving dispute:", disputeId);
+    const handleSendMessage = () => {
+        if (newMessage.trim() && currentUser) {
+            addMessageMutation.mutate({message: newMessage, senderId: currentUser.userId});
+            setNewMessage('');
+        }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const canParticipate = currentUser?.role === 'ADMIN' || [dispute.sellerId, dispute.winnerId].includes(currentUser?.userId || '');
+    const isDisputeOpen = dispute.status === 'OPEN';
+
     return (
-        <Box sx={{maxWidth: 1200, mx: 'auto', mt: 4, p: 2}}>
-            <Typography variant="h4" gutterBottom>Dispute Details</Typography>
-            <Grid container spacing={4}>
-                {/* Left Column: Listing Details */}
+        <Box sx={{p: 3, flexGrow: 1}}>
+            <Grid container spacing={3}>
+                {/* Left Column: Details */}
                 <Grid item xs={12} md={5}>
-                    <Typography variant="h5" gutterBottom>Associated Listing</Typography>
                     <Card>
-                        {listing ? (
-                            <>
-                                <Link to={`/listings/${listing.listingId}`}
-                                      style={{textDecoration: 'none', color: 'inherit'}}>
-                                    <CardMedia
-                                        component="img"
-                                        height="240"
-                                        image={listing.item.imageIds[0]}
-                                        alt={listing.item.title}
-                                        sx={{cursor: 'pointer'}}
-                                    />
-                                    <CardContent>
-                                        <Typography variant="h6" component="div" gutterBottom>
-                                            {toTitleCase(listing.item.title)}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{
-                                            display: '-webkit-box',
-                                            WebkitLineClamp: 3,
-                                            WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            mb: 2
-                                        }}>
-                                            {listing.item.description}
-                                        </Typography>
-                                    </CardContent>
-                                </Link>
-                                <Divider/>
-                                <CardContent>
-                                    <Typography variant="subtitle1">Seller</Typography>
-                                    <Typography
-                                        color="text.secondary">{pretty(seller?.username || 'Loading...')}</Typography>
-                                </CardContent>
-                            </>
+                        {isListingLoading ? (
+                            <Skeleton variant="rectangular" height={250}/>
                         ) : (
-                            <CardContent>
-                                <CircularProgress/>
-                            </CardContent>
+                            <CardMedia
+                                component="img"
+                                height="250"
+                                image={listing?.item.imageIds[0] || '/placeholder.png'}
+                                alt={listing?.item.title}
+                            />
+                        )}
+                        <CardContent>
+                            <Typography variant="h5" gutterBottom>
+                                {isListingLoading ? <Skeleton/> : pretty(listing?.item.title ?? "")}
+                            </Typography>
+                            <Divider sx={{my: 2}}/>
+                            <Typography variant="h6" gutterBottom>Dispute Details</Typography>
+                            <Stack spacing={1} sx={{mt: 1}}>
+                                <Typography><b>Status:</b> {dispute.status}</Typography>
+                                <Typography><b>Reason:</b> {dispute.reason}</Typography>
+                                <Typography>
+                                    <b>Seller:</b> {isSellerLoading ?
+                                    <Skeleton width="50%"/> : pretty(seller?.username || 'N/A')}
+                                </Typography>
+                                <Typography>
+                                    <b>Winner:</b> {isWinnerLoading ?
+                                    <Skeleton width="50%"/> : pretty(winner?.username || 'N/A')}
+                                </Typography>
+                            </Stack>
+                        </CardContent>
+                        {currentUser?.role === 'ADMIN' && isDisputeOpen && (
+                            <>
+                                <Divider/>
+                                <CardActions sx={{justifyContent: 'flex-end', p: 2}}>
+                                    <Button variant="contained" color="primary">Resolve Dispute</Button>
+                                </CardActions>
+                            </>
                         )}
                     </Card>
                 </Grid>
 
-                {/* Right Column: Dispute Details */}
+                {/* Right Column: Messages */}
                 <Grid item xs={12} md={7}>
-                    <Typography variant="h5" gutterBottom>Dispute Information</Typography>
-                    <Card>
+                    <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
                         <CardContent>
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6" gutterBottom>Status</Typography>
-                                    <Chip label={pretty(dispute.status)} color="primary"/>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6" gutterBottom>Reason</Typography>
-                                    <Typography>{pretty(dispute.reason)}</Typography>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant="h6" gutterBottom>Details</Typography>
-                                    <Typography sx={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
-                                        {dispute.details || 'No details provided.'}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6" gutterBottom>Winner</Typography>
-                                    <Typography>{pretty(winner?.username || 'N/A')}</Typography>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6" gutterBottom>Seller</Typography>
-                                    <Typography>{pretty(seller?.username || 'Loading...')}</Typography>
-                                </Grid>
-                            </Grid>
+                            <Typography variant="h6" gutterBottom>Messages</Typography>
                         </CardContent>
-                        {currentUser?.role === 'ADMIN' && dispute.status !== 'RESOLVED' && (
-                            <>
-                                <Divider/>
-                                <CardActions sx={{justifyContent: 'flex-end', p: 2}}>
-                                    <Button variant="contained" color="primary" onClick={handleResolveDispute}>
-                                        Resolve Dispute
+                        <CardContent sx={{flexGrow: 1, overflowY: 'auto', p: 2, borderTop: 1, borderColor: 'divider'}}>
+                            {sortedMessages.length > 0 ? sortedMessages.map(msg => (
+                                <DisputeMessageItem key={msg.messageId} message={msg}
+                                                    isCurrentUser={msg.senderId === currentUser?.userId}/>
+                            )) : <Typography sx={{textAlign: 'center', color: 'text.secondary'}}>No messages
+                                yet.</Typography>}
+                            <div ref={messagesEndRef}/>
+                        </CardContent>
+                        {canParticipate && isDisputeOpen && (
+                            <Box sx={{p: 2, borderTop: 1, borderColor: 'divider'}}>
+                                <Stack direction="row" spacing={1}>
+                                    <TextField
+                                        fullWidth
+                                        size="small"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Type a message..."
+                                        disabled={addMessageMutation.isPending}
+                                    />
+                                    <Button variant="contained" onClick={handleSendMessage}
+                                            disabled={!newMessage.trim() || addMessageMutation.isPending}>
+                                        <Send/>
                                     </Button>
-                                </CardActions>
-                            </>
+                                </Stack>
+                            </Box>
                         )}
                     </Card>
                 </Grid>

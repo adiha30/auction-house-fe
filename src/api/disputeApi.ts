@@ -3,7 +3,7 @@ import axios from "./axios.ts"
 export enum DisputeReason {
     ITEM_NOT_AS_DESCRIBED = 'Item not as described',
     ITEM_NOT_RECEIVED = 'Item not received',
-    FRAUDLENT_SELLER = 'Fraudulent seller',
+    FRAUDULENT_SELLER = 'Fraudulent seller',
     OTHER = 'Other'
 }
 
@@ -11,6 +11,14 @@ export enum DisputeStatus {
     OPEN = 'OPEN',
     AWAITING_FOR_DECISION = 'AWAITING_FOR_DECISION',
     CLOSED = 'CLOSED'
+}
+
+export interface DisputeMessage {
+    messageId: string;
+    disputeId: string;
+    senderId: string;
+    message: string;
+    createdAt: string;
 }
 
 export interface Dispute {
@@ -21,6 +29,8 @@ export interface Dispute {
     reason: string;
     details: string;
     status: DisputeStatus;
+    disputeMessages: DisputeMessage[];
+    createdAt: string;
 }
 
 export interface CreateDisputeRequest {
@@ -41,4 +51,29 @@ export const getDispute = async (disputeId: string): Promise<Dispute> => {
     const response = await axios.get<Dispute>(`/disputes/${disputeId}`);
 
     return response.data;
+}
+
+export const getMyDisputes = async (userId: string, page: number, size: number): Promise<Dispute[]> => {
+    const response = await axios.get<Dispute[]>(`/disputes/user/${userId}`, {
+        params: {
+            page,
+            size
+        }
+    });
+    return response.data;
+};
+
+export const addDisputeMessage = async (disputeId: string, message: string, senderId: string): Promise<void> =>
+    await axios.post(`/disputes/${disputeId}/message`, {disputeId, message, senderId});
+
+export const checkDisputeExists = async (listingId: string): Promise<string | null> => {
+    try {
+        const response = await axios.get<string | null>(`/disputes/${listingId}/exists`);
+
+        return response.data || null;
+    } catch (error) {
+        console.error(`Error checking dispute existence for listing ${listingId}:`, error);
+
+        return null;
+    }
 }

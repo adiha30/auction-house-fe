@@ -2,7 +2,6 @@ import React, {useEffect, useState} from "react";
 import {
     Avatar,
     Box,
-    Button,
     Card,
     CardContent,
     CardMedia,
@@ -35,8 +34,8 @@ import {pretty} from "./CreateListingPage.tsx";
 import {ListingDetails} from "../api/listingApi.ts";
 import {DisputeReason} from "../api/disputeApi.ts";
 import {useCreateDispute} from "../hooks/useDisputes.ts";
-import {Create} from "@mui/icons-material";
 import CreateDisputeModal from "../components/CreateDisputeModal.tsx";
+import DisputeButton from "../components/DisputeButton.tsx";
 
 enum ViewMode {
     LIST = "list",
@@ -86,8 +85,7 @@ const ListingsWonPage: React.FC = () => {
         return <Box sx={{p: 4, textAlign: 'center'}}><CircularProgress/></Box>;
     }
 
-    const handleDisputeClick = (e: React.MouseEvent, listing: ListingDetails) => {
-        e.stopPropagation();
+    const handleOpenDisputeClick = (listing: ListingDetails) => {
         setSelectedListing(listing);
         setDisputeModalOpen(true);
     };
@@ -138,12 +136,7 @@ const ListingsWonPage: React.FC = () => {
                             }
                         />
                         {listing.endTime && (new Date().getTime() - new Date(listing.endTime).getTime() <= LAST_14_DAYS) && (
-                            <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={(e) => handleDisputeClick(e, listing)}>
-                                Open Dispute
-                            </Button>
+                            <DisputeButton listing={listing} onOpenDispute={handleOpenDisputeClick}/>
                         )}
                     </ListItemButton>
                 );
@@ -155,6 +148,7 @@ const ListingsWonPage: React.FC = () => {
         <Grid container spacing={2}>
             {wonListings !== undefined && wonListings.map((listing) => {
                 const img = listing.item.imageIds?.[0]
+                const LAST_14_DAYS = 14 * 24 * 60 * 60 * 1000;
 
                 return (
                     <Grid
@@ -170,7 +164,6 @@ const ListingsWonPage: React.FC = () => {
                         }}
                     >
                         <Card
-                            onClick={() => handleClick(listing.listingId)}
                             sx={{
                                 cursor: 'pointer',
                                 width: '100%',
@@ -180,22 +173,29 @@ const ListingsWonPage: React.FC = () => {
                                 minWidth: 0,
                             }}
                         >
-                            {img ? (
-                                <CardMedia
-                                    component="img"
-                                    height={140}
-                                    image={img}
-                                    alt={toTitleCase(listing.item.title)}
-                                    sx={{objectFit: 'cover'}}
-                                />
-                            ) : (
-                                <Box sx={{width: '100%', height: 140, backgroundColor: 'grey.200'}}/>
-                            )}
-                            <CardContent sx={{overflow: 'hidden', flexGrow: 1}}>
-                                <Typography noWrap variant="h6">{toTitleCase(listing.item.title)}</Typography>
-                                <Typography noWrap variant="body2">
-                                    {getListingWonDetails(listing)}
-                                </Typography>
+                            <Box onClick={() => handleClick(listing.listingId)} sx={{flexGrow: 1}}>
+                                {img ? (
+                                    <CardMedia
+                                        component="img"
+                                        height={140}
+                                        image={img}
+                                        alt={toTitleCase(listing.item.title)}
+                                        sx={{objectFit: 'cover'}}
+                                    />
+                                ) : (
+                                    <Box sx={{width: '100%', height: 140, backgroundColor: 'grey.200'}}/>
+                                )}
+                                <CardContent sx={{overflow: 'hidden', flexGrow: 1}}>
+                                    <Typography noWrap variant="h6">{toTitleCase(listing.item.title)}</Typography>
+                                    <Typography noWrap variant="body2">
+                                        {getListingWonDetails(listing)}
+                                    </Typography>
+                                </CardContent>
+                            </Box>
+                            <CardContent sx={{pt: 0}}>
+                                {listing.endTime && (new Date().getTime() - new Date(listing.endTime).getTime() <= LAST_14_DAYS) && (
+                                    <DisputeButton listing={listing} onOpenDispute={handleOpenDisputeClick}/>
+                                )}
                             </CardContent>
                         </Card>
                     </Grid>
@@ -267,7 +267,7 @@ const ListingsWonPage: React.FC = () => {
             <Box sx={{mt: 2}}>
                 {isLoading ? (
                     <CircularProgress/>
-                ) : isError && wonListingsData?.message ? (
+                ) : isError && wonListingsData === undefined ? (
                     <Typography color="error">Failed to load.</Typography>
                 ) : wonListings === undefined || wonListings.length === 0 ? (
                     <Box sx={{textAlign: 'center', mt: 4}}>

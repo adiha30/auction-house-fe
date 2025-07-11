@@ -4,6 +4,7 @@ import ProfilePage from "./ProfilePage.tsx";
 import MyListingsPage from "./MyListingsPage.tsx";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import UserManagerPage from "./UserManagerPage.tsx";
+import MyDisputesPage from "./MyDisputesPage.tsx";
 import ListingsWonPage from "./ListingsWonPage.tsx";
 
 export default function Dashboard() {
@@ -39,7 +40,7 @@ export default function Dashboard() {
                 {!isAdmin && <Tab label="My Listings" value="listings" sx={tabStyles}/>}
                 {!isAdmin && <Tab label="Listings won" value="wonListings" sx={tabStyles}/>}
                 {isAdmin && <Tab label="User Manager" value="userManager" sx={tabStyles}/>}
-                {isAdmin && <Tab label="Disputes" value="disputes" sx={tabStyles}/>}
+                <Tab label="Disputes" value="disputes" sx={tabStyles}/>
 
             </Tabs>
 
@@ -47,9 +48,9 @@ export default function Dashboard() {
                 {selectedTab === 'profile' ? <ProfilePage/> :
                     selectedTab === 'listings' ? <MyListingsPage/> :
                         selectedTab === 'userManager' ? <UserManagerPage/> :
-                            selectedTab === 'disputes' ? <div>Disputes Section (Coming Soon)</div> :
-                                selectedTab === 'wonListings' ? <ListingsWonPage /> :
-                                    null}
+                            selectedTab === 'disputes' ? <MyDisputesPage/> :
+                    selectedTab === 'wonListings' ? <ListingsWonPage /> :
+                    null}
             </Box>
         </Box>
     );

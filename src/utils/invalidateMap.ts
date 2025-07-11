@@ -68,6 +68,7 @@ export function invalidateFromNotification(
             break;
 
         case NotificationType.AUCTION_ENDED:
+        case NotificationType.LISTING_REMOVED_BY_ADMIN:
         case NotificationType.BOUGHT_OUT:
             if (listingId) {
                 invalidateListingDetails(queryClient, listingId);

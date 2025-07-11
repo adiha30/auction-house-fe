@@ -75,7 +75,7 @@ export const getHotListings = async (category: string, limit: number) =>
                 },
             })));
 
-export const getListing = async (id: string) => {
+export const getListing = async (id: string | undefined) => {
     const res = await api.get<ListingDetails>(`${listingsPath}/${id}`);
     return {
         ...res.data,

@@ -20,7 +20,9 @@ export enum NotificationType {
     AUCTION_CREATED = "AUCTION_CREATED",
     BOUGHT_OUT = "BOUGHT_OUT",
     DISPUTE_OPENED = "DISPUTE_OPENED",
-    WATCHED_CHANGE = "WATCHED_CHANGE"
+    DISPUTE_MESSAGE = "DISPUTE_MESSAGE",
+    WATCHED_CHANGE = "WATCHED_CHANGE",
+    LISTING_REMOVED_BY_ADMIN = "LISTING_REMOVED_BY_ADMIN",
 }
 
 export interface Notification {
@@ -136,7 +138,14 @@ export function useNotifications() {
                             (old: number = 0) => old + 1
                         )
 
-                        invalidateFromNotification(notification, queryClient);
+                        if (notification.type === NotificationType.DISPUTE_MESSAGE) {
+                            const disputeId = notification.targetUrl.split('/').pop();
+                            if (disputeId) {
+                                queryClient.invalidateQueries({queryKey: ['dispute', disputeId]});
+                            }
+                        } else {
+                            invalidateFromNotification(notification, queryClient);
+                        }
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
                         console.log(m);
