@@ -102,8 +102,14 @@ const DisputePage: React.FC = () => {
     const isDisputeOpen = dispute.status === 'OPEN';
 
     return (
-        <Box sx={{p: 3, flexGrow: 1}}>
-            <Grid container spacing={3}>
+        <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            p: 3,
+            // Assuming a header/appbar height of 64px. 3rem is for the padding (p: 3 -> 24px -> 1.5rem * 2)
+            minHeight: 'calc(100vh - 64px - 3rem)',
+        }}>
+            <Grid container spacing={3} sx={{flexGrow: 1}}>
                 {/* Left Column: Details */}
                 <Grid item xs={12} md={5}>
                     <Card>
@@ -148,8 +154,8 @@ const DisputePage: React.FC = () => {
                 </Grid>
 
                 {/* Right Column: Messages */}
-                <Grid item xs={12} md={7}>
-                    <Card sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+                <Grid item xs={12} md={7} sx={{display: 'flex', flexDirection: 'column'}}>
+                    <Card sx={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>Messages</Typography>
                         </CardContent>
