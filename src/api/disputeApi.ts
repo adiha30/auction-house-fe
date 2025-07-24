@@ -58,6 +58,13 @@ export const getDispute = async (disputeId: string): Promise<Dispute> => {
     return response.data;
 }
 
+export const getAllDisputes = async (page: number, size: number): Promise<PaginatedDisputes> => {
+    const response = await axios.get<PaginatedDisputes>('/disputes', {
+        params: {page, size},
+    });
+    return response.data;
+};
+
 export const getMyDisputes = async (userId: string, page: number, size: number): Promise<PaginatedDisputes> => {
     const response = await axios.get<Dispute[]>(`/disputes/user/${userId}`, {
         params: {

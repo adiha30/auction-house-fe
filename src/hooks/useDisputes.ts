@@ -5,6 +5,7 @@ import {
     createDispute,
     CreateDisputeRequest,
     Dispute,
+    getAllDisputes,
     getDispute,
     getMyDisputes
 } from "../api/disputeApi.ts";
@@ -87,5 +88,13 @@ export function useMyDisputes(userId: string, page: number, size: number) {
         queryKey: ['disputes', 'my', {userId, page, size}],
         queryFn: () => getMyDisputes(userId!, page, size),
         enabled: !!userId,
+    });
+}
+
+export function useAllDisputes(page: number, size: number, options?: { enabled?: boolean }) {
+    return useQuery({
+        queryKey: ['disputes', 'all', {page, size}],
+        queryFn: () => getAllDisputes(page, size),
+        enabled: options?.enabled,
     });
 }

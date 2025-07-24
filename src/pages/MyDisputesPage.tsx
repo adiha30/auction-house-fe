@@ -26,7 +26,7 @@ import {toTitleCase} from "../utils/text.ts";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import {formatDistanceToNow} from "date-fns";
 import {Dispute} from "../api/disputeApi.ts";
-import {useMyDisputes} from "../hooks/useDisputes.ts";
+import {useAllDisputes, useMyDisputes} from "../hooks/useDisputes.ts";
 import {useListing} from "../hooks/useListing.ts";
 
 enum ViewMode {
@@ -136,12 +136,17 @@ const MyDisputesPage: React.FC = () => {
     const limit = 10;
 
     const {data: user, isLoading: isUserLoading} = useCurrentUser();
+    const isAdmin = user?.role === 'ADMIN';
+
+    const allDisputesQuery = useAllDisputes(page - 1, limit, {enabled: isAdmin});
+    const myDisputesQuery = useMyDisputes(user?.userId ?? '', page - 1, limit);
+
     const {
         data: disputesData,
         isLoading: isDisputesLoading,
         isError,
         error
-    } = useMyDisputes(user?.userId ?? "", page - 1, limit);
+    } = isAdmin ? allDisputesQuery : myDisputesQuery;
 
     const disputes = disputesData?.content;
     const totalPages = disputesData?.totalPages ?? 0;
