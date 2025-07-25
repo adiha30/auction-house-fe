@@ -28,6 +28,14 @@ const invalidateListingLists = (queryClient: QueryClient) => {
     invalidateUserListings(queryClient);
 }
 
+const invalidateDispute = (queryClient: QueryClient, id: string) => {
+    queryClient.invalidateQueries({queryKey: ["dispute", id]});
+}
+
+const invalidateDisputes = (queryClient: QueryClient) => {
+    queryClient.invalidateQueries({queryKey: ["disputes"]});
+}
+
 export function invalidateFromNotification(
     notification: Notification,
     queryClient: QueryClient
@@ -84,6 +92,16 @@ export function invalidateFromNotification(
             break;
 
         case NotificationType.DISPUTE_OPENED:
+            invalidateDisputes(queryClient);
+            break;
+
+        case NotificationType.DISPUTE_CLOSED:
+            if (listingId) {
+                invalidateDispute(queryClient, listingId);
+            }
+            invalidateDisputes(queryClient);
+            break;
+
         case NotificationType.WATCHED_CHANGE:
         default:
             break;
