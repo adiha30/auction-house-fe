@@ -23,6 +23,8 @@ import {useListing} from '../hooks/useListing';
 import {useUser} from '../hooks/useUser';
 import {DisputeMessage} from '../api/disputeApi';
 import {pretty} from "./CreateListingPage.tsx";
+import ResolveDisputeDialog from "../components/ResolveDisputeDialog.tsx";
+import {useResolveDispute} from "../hooks/useResolveDispute.ts";
 
 const DisputeMessageItem: React.FC<{ message: DisputeMessage, isCurrentUser: boolean }> = ({
                                                                                                message,
@@ -57,7 +59,9 @@ const DisputePage: React.FC = () => {
     const {data: dispute, isLoading, isError} = useDispute(disputeId!);
     const {data: currentUser} = useCurrentUser();
     const addMessageMutation = useAddDisputeMessage(disputeId!);
+    const resolveDisputeMutation = useResolveDispute(disputeId!);
     const [newMessage, setNewMessage] = useState('');
+    const [isResolveDialogOpen, setResolveDialogOpen] = useState(false);
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
     const {data: listing, isLoading: isListingLoading} = useListing(dispute?.listingId);
@@ -89,6 +93,11 @@ const DisputePage: React.FC = () => {
             addMessageMutation.mutate({message: newMessage, senderId: currentUser.userId});
             setNewMessage('');
         }
+    };
+
+    const handleResolveDispute = () => {
+        resolveDisputeMutation.mutate();
+        setResolveDialogOpen(false);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -146,7 +155,7 @@ const DisputePage: React.FC = () => {
                             <>
                                 <Divider/>
                                 <CardActions sx={{justifyContent: 'flex-end', p: 2}}>
-                                    <Button variant="contained" color="primary">Resolve Dispute</Button>
+                                    <Button variant="contained" color="primary" onClick={() => setResolveDialogOpen(true)} disabled={!isDisputeOpen}>Resolve Dispute</Button>
                                 </CardActions>
                             </>
                         )}
@@ -189,6 +198,11 @@ const DisputePage: React.FC = () => {
                     </Card>
                 </Grid>
             </Grid>
+            <ResolveDisputeDialog
+                open={isResolveDialogOpen}
+                onClose={() => setResolveDialogOpen(false)}
+                onConfirm={handleResolveDispute}
+            />
         </Box>
     );
 };

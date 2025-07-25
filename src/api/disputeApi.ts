@@ -86,6 +86,15 @@ export const getMyDisputes = async (userId: string, page: number, size: number):
 export const addDisputeMessage = async (disputeId: string, message: string, senderId: string): Promise<void> =>
     await axios.post(`/disputes/${disputeId}/message`, {disputeId, message, senderId});
 
+export const updateDisputeStatus = async (disputeId: string, status: string): Promise<string> => {
+    const response = await axios.put<string>(`/disputes/${disputeId}/status`, status, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    return response.data;
+}
+
 export const checkDisputeExists = async (listingId: string): Promise<string | null> => {
     try {
         const response = await axios.get<string | null>(`/disputes/${listingId}/exists`);
