@@ -36,6 +36,7 @@ export interface Dispute {
 export interface PaginatedDisputes {
     content: Dispute[];
     totalPages: number;
+    totalElements: number;
 }
 
 export interface CreateDisputeRequest {
@@ -80,6 +81,7 @@ export const getMyDisputes = async (userId: string, page: number, size: number):
     return {
         content: disputes,
         totalPages: totalPages,
+        totalElements: disputes.length,
     };
 };
 

@@ -41,8 +41,11 @@ const AllDisputesPage = () => {
         return <Alert severity="error">{(error as Error).message}</Alert>;
     }
 
+    const disputes = data?.content;
+    const totalCount = data?.totalElements;
+
     return (
-        <Paper>
+        <Paper sx={{p: 2}}>
             <Typography variant="h4" gutterBottom>
                 All Disputes
             </Typography>
@@ -61,7 +64,7 @@ const AllDisputesPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {(data?.content || []).map((dispute) => (
+                        {(disputes || []).map((dispute) => (
                             <TableRow key={dispute.disputeId}>
                                 <TableCell>{dispute.disputeId}</TableCell>
                                 <TableCell>{dispute.listingId}</TableCell>
@@ -87,7 +90,7 @@ const AllDisputesPage = () => {
             <TablePagination
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={-1}
+                count={totalCount ?? 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
