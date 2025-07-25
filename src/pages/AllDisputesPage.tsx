@@ -22,34 +22,58 @@ import {useListing} from "../hooks/useListing.ts";
 import {GridView, ViewList} from "@mui/icons-material";
 import {Dispute} from "../api/disputeApi.ts";
 
-const DisputeCard = ({dispute}: { dispute: Dispute }) => {
+const DisputeCard = ({dispute, view}: { dispute: Dispute, view: 'gallery' | 'list' }) => {
     const {data: winner, isLoading: isWinnerLoading} = useUser(dispute.winnerId);
     const {data: seller, isLoading: isSellerLoading} = useUser(dispute.sellerId);
     const {data: listing, isLoading: isListingLoading} = useListing(dispute.listingId);
 
+    const cardContent = (
+        <>
+            <Typography variant="h6" gutterBottom>
+                {isListingLoading ? "Loading..." : listing?.title}
+            </Typography>
+            <Typography color="textSecondary" gutterBottom>
+                Winner: {isWinnerLoading ? "Loading..." : winner?.username}
+            </Typography>
+            <Typography color="textSecondary" gutterBottom>
+                Seller: {isSellerLoading ? "Loading..." : seller?.username}
+            </Typography>
+            <Typography variant="body2" component="p">
+                Reason: {dispute.reason}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+                Status: {dispute.status}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+                Opened: {new Date(dispute.createdAt).toLocaleDateString()}
+            </Typography>
+        </>
+    );
+
+    if (view === 'list') {
+        return (
+            <Card sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2}}>
+                <Box>
+                    {cardContent}
+                </Box>
+                <Button
+                    component={RouterLink}
+                    to={`/disputes/${dispute.disputeId}`}
+                    variant="contained"
+                    size="small"
+                >
+                    View Dispute
+                </Button>
+            </Card>
+        )
+    }
+
     return (
         <Card>
-            <CardContent>
-                <Typography variant="h6" gutterBottom>
-                    {isListingLoading ? "Loading..." : listing?.title}
-                </Typography>
-                <Typography color="textSecondary" gutterBottom>
-                    Winner: {isWinnerLoading ? "Loading..." : winner?.username}
-                </Typography>
-                <Typography color="textSecondary" gutterBottom>
-                    Seller: {isSellerLoading ? "Loading..." : seller?.username}
-                </Typography>
-                <Typography variant="body2" component="p">
-                    Reason: {dispute.reason}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                    Status: {dispute.status}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                    Opened: {new Date(dispute.createdAt).toLocaleDateString()}
-                </Typography>
+            <CardContent sx={{p: 2}}>
+                {cardContent}
             </CardContent>
-            <CardActions>
+            <CardActions sx={{px: 2, pb: 2}}>
                 <Button
                     component={RouterLink}
                     to={`/disputes/${dispute.disputeId}`}
@@ -66,7 +90,7 @@ const DisputeCard = ({dispute}: { dispute: Dispute }) => {
 const AllDisputesPage = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [view, setView] = useState('gallery'); // 'gallery' or 'list'
+    const [view, setView] = useState<'gallery' | 'list'>('gallery'); // 'gallery' or 'list'
     const {data: currentUser} = useCurrentUser();
     const {data, isLoading, isError, error} = useAllDisputes(page, rowsPerPage, currentUser?.role === Role.ADMIN);
 
@@ -109,7 +133,7 @@ const AllDisputesPage = () => {
                 {(disputes || []).map((dispute) => (
                     <Grid item key={dispute.disputeId} xs={12} sm={view === 'gallery' ? 6 : 12}
                           md={view === 'gallery' ? 4 : 12}>
-                        <DisputeCard dispute={dispute}/>
+                        <DisputeCard dispute={dispute} view={view}/>
                     </Grid>
                 ))}
             </Grid>
