@@ -6,6 +6,7 @@ import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import UserManagerPage from "./UserManagerPage.tsx";
 import MyDisputesPage from "./MyDisputesPage.tsx";
 import ListingsWonPage from "./ListingsWonPage.tsx";
+import AllDisputesPage from "./AllDisputesPage.tsx";
 
 export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState<'profile' | 'listings' | 'disputes' | 'userManager'>('profile');
@@ -48,7 +49,7 @@ export default function Dashboard() {
                 {selectedTab === 'profile' ? <ProfilePage/> :
                     selectedTab === 'listings' ? <MyListingsPage/> :
                         selectedTab === 'userManager' ? <UserManagerPage/> :
-                            selectedTab === 'disputes' ? <MyDisputesPage/> :
+                            selectedTab === 'disputes' ? (isAdmin ? <AllDisputesPage/> : <MyDisputesPage/>) :
                     selectedTab === 'wonListings' ? <ListingsWonPage /> :
                     null}
             </Box>
