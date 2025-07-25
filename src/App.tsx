@@ -12,6 +12,8 @@ import CreateListingCategoryPage from './pages/CreateListingCategoryPage';
 import CreateListingDetailsPage from './pages/CreateListingDetailPage.tsx';
 import HomePage from "./pages/HomePage.tsx";
 import {useBroadcastChannel} from "./hooks/useBroadcastChannel.ts";
+import DisputePage from "./pages/DisputePage.tsx";
+import AllDisputesPage from "./pages/AllDisputesPage.tsx";
 
 
 const App: React.FC = () => {
@@ -33,6 +35,8 @@ const App: React.FC = () => {
                     <Route path="/create/:category" element={<CreateListingDetailsPage/>}/>
                     <Route path="/dashboard" element={<Dashboard/>}/>
                     <Route path="/dashboard/edit" element={<EditProfilePage/>}/>
+                    <Route path="/disputes" element={<AllDisputesPage/>}/>
+                    <Route path="/disputes/:disputeId" element={<DisputePage />} />
                 </Route>
 
                 <Route path="*" element={<Navigate to="/"/>}/>

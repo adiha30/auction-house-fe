@@ -62,7 +62,8 @@ function HeroSlide({listing}: { listing: ListingSummary }) {
                 </Typography>
 
                 <Typography variant="h6" color="#fff">
-                    Current Price: <b>${listing.latestBidAmount?.toLocaleString() ?? listing.startPrice.toLocaleString()}</b>
+                    Current
+                    Price: <b>${listing.latestBidAmount?.toLocaleString() ?? listing.startPrice.toLocaleString()}</b>
                 </Typography>
 
                 <Typography

@@ -4,6 +4,9 @@ import ProfilePage from "./ProfilePage.tsx";
 import MyListingsPage from "./MyListingsPage.tsx";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import UserManagerPage from "./UserManagerPage.tsx";
+import MyDisputesPage from "./MyDisputesPage.tsx";
+import ListingsWonPage from "./ListingsWonPage.tsx";
+import AllDisputesPage from "./AllDisputesPage.tsx";
 
 export default function Dashboard() {
     const [selectedTab, setSelectedTab] = useState<'profile' | 'listings' | 'disputes' | 'userManager'>('profile');
@@ -36,17 +39,19 @@ export default function Dashboard() {
             >
                 <Tab label="Profile" value="profile" sx={tabStyles}/>
                 {!isAdmin && <Tab label="My Listings" value="listings" sx={tabStyles}/>}
+                {!isAdmin && <Tab label="Listings won" value="wonListings" sx={tabStyles}/>}
                 {isAdmin && <Tab label="User Manager" value="userManager" sx={tabStyles}/>}
-                {isAdmin && <Tab label="Disputes" value="disputes" sx={tabStyles}/>}
+                <Tab label="Disputes" value="disputes" sx={tabStyles}/>
 
             </Tabs>
 
             <Box flexGrow={1}>
                 {selectedTab === 'profile' ? <ProfilePage/> :
                     selectedTab === 'listings' ? <MyListingsPage/> :
-                        selectedTab === 'userManager' ? <UserManagerPage /> :
-                            selectedTab === 'disputes' ? <div>Disputes Section (Coming Soon)</div> :
-                                null}
+                        selectedTab === 'userManager' ? <UserManagerPage/> :
+                            selectedTab === 'disputes' ? (isAdmin ? <AllDisputesPage/> : <MyDisputesPage/>) :
+                    selectedTab === 'wonListings' ? <ListingsWonPage /> :
+                    null}
             </Box>
         </Box>
     );

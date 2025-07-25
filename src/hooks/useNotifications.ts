@@ -6,6 +6,8 @@ import {useEffect} from "react";
 import {Client, IMessage} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import {invalidateFromNotification} from "../utils/invalidateMap.ts";
+import {useCurrentUser} from "./useCurrentUser.ts";
+import {Role} from "../api/authApi.ts";
 
 export enum NotificationType {
     NEW_BID = "NEW_BID",
@@ -18,7 +20,10 @@ export enum NotificationType {
     AUCTION_CREATED = "AUCTION_CREATED",
     BOUGHT_OUT = "BOUGHT_OUT",
     DISPUTE_OPENED = "DISPUTE_OPENED",
-    WATCHED_CHANGE = "WATCHED_CHANGE"
+    DISPUTE_CLOSED = "DISPUTE_CLOSED",
+    DISPUTE_MESSAGE = "DISPUTE_MESSAGE",
+    WATCHED_CHANGE = "WATCHED_CHANGE",
+    LISTING_REMOVED_BY_ADMIN = "LISTING_REMOVED_BY_ADMIN",
 }
 
 export interface Notification {
@@ -107,17 +112,20 @@ export function useNotifications() {
         onError: () => enqueueSnackbar("Failed to mark all notifications", {variant: "error"}),
     });
 
+    const {data: user} = useCurrentUser();
+
     useEffect(() => {
-        const log = (...a: any[]) => console.info("[WS]", ...a);
+        const log = (...a: unknown[]) => console.info("[WS]", ...a);
 
         if (!userId || !token) return;
+        const isAdmin = user?.role === Role.ADMIN;
 
         const stomp = new Client({
             webSocketFactory: () => new SockJS(`${import.meta.env.VITE_API_URL.replace(/\$/, "")}/ws`),
             debug: log,
             reconnectDelay: 0,
             onConnect: () => {
-                stomp.subscribe(`/topic/notifications/${userId}`, (m: IMessage) => {
+                stomp.subscribe(`/topic/notifications/${isAdmin ? "admin" : userId}`, (m: IMessage) => {
                     try {
                         const notification = JSON.parse(m.body) as Notification;
                         enqueueSnackbar(notification.text, {
@@ -131,7 +139,14 @@ export function useNotifications() {
                             (old: number = 0) => old + 1
                         )
 
-                        invalidateFromNotification(notification, queryClient);
+                        if (notification.type === NotificationType.DISPUTE_MESSAGE) {
+                            const disputeId = notification.targetUrl.split('/').pop();
+                            if (disputeId) {
+                                queryClient.invalidateQueries({queryKey: ['dispute', disputeId]});
+                            }
+                        } else {
+                            invalidateFromNotification(notification, queryClient);
+                        }
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
                         console.log(m);
@@ -146,7 +161,7 @@ export function useNotifications() {
         return () => {
             stomp.deactivate();
         };
-    }, [userId, token, queryClient]);
+    }, [userId, token, queryClient, user]);
 
     return {
         notifications,

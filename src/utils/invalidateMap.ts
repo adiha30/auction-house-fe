@@ -28,6 +28,14 @@ const invalidateListingLists = (queryClient: QueryClient) => {
     invalidateUserListings(queryClient);
 }
 
+const invalidateDispute = (queryClient: QueryClient, id: string) => {
+    queryClient.invalidateQueries({queryKey: ["dispute", id]});
+}
+
+const invalidateDisputes = (queryClient: QueryClient) => {
+    queryClient.invalidateQueries({queryKey: ["disputes"]});
+}
+
 export function invalidateFromNotification(
     notification: Notification,
     queryClient: QueryClient
@@ -68,6 +76,7 @@ export function invalidateFromNotification(
             break;
 
         case NotificationType.AUCTION_ENDED:
+        case NotificationType.LISTING_REMOVED_BY_ADMIN:
         case NotificationType.BOUGHT_OUT:
             if (listingId) {
                 invalidateListingDetails(queryClient, listingId);
@@ -83,6 +92,16 @@ export function invalidateFromNotification(
             break;
 
         case NotificationType.DISPUTE_OPENED:
+            invalidateDisputes(queryClient);
+            break;
+
+        case NotificationType.DISPUTE_CLOSED:
+            if (listingId) {
+                invalidateDispute(queryClient, listingId);
+            }
+            invalidateDisputes(queryClient);
+            break;
+
         case NotificationType.WATCHED_CHANGE:
         default:
             break;

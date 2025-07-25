@@ -12,7 +12,7 @@ export const getOffers = (listingId: string) =>
     api.get<OfferResponse[]>(`/offers/listing/${listingId}`).then(res => res.data);
 
 export const createOffer = (listingId: string, amount: number) =>
-    api.post<OfferResponse>(`/offers`, { listingId, amount }).then(res => res.data);
+    api.post<OfferResponse>(`/offers`, {listingId, amount}).then(res => res.data);
 
 export const acceptOffer = (offerId: string) =>
     api.post<void>(`/offers/${offerId}/accept`);

@@ -21,9 +21,8 @@ import {
     ToggleButtonGroup,
     Typography,
 } from "@mui/material";
-import {useQuery} from "@tanstack/react-query";
 import {useNavigate} from "react-router-dom";
-import {getUserListings, getUserOpenListings, ListingDetails, uploadsPath,} from "../api/listingApi";
+import {uploadsPath,} from "../api/listingApi";
 import {API_URL} from "../api/config";
 import Grid from "@mui/material/Grid";
 import ViewListIcon from "@mui/icons-material/ViewList";
@@ -34,6 +33,7 @@ import {toTitleCase} from "../utils/text.ts";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import {Role} from "../api/authApi.ts";
 import {enqueueSnackbar} from "notistack";
+import {useMyFullActiveListings, useMyFullInactiveListings} from "../hooks/useMyFullListings.ts";
 
 enum ViewMode {
     LIST = "list",
@@ -77,21 +77,13 @@ const MyListingsPage: React.FC = () => {
         data: activeListings,
         isLoading: loadingActive,
         isError: errorActive,
-    } = useQuery<ListingDetails[]>({
-        queryKey: ["myFullListings", "active"],
-        queryFn: getUserOpenListings,
-        enabled: !isAdmin,
-    });
+    } = useMyFullActiveListings(isAdmin);
 
     const {
         data: inactiveListings,
         isLoading: loadingInactive,
         isError: errorInactive,
-    } = useQuery<ListingDetails[]>({
-        queryKey: ["myFullListings", "inactive"],
-        queryFn: getUserListings,
-        enabled: !isAdmin,
-    });
+    } = useMyFullInactiveListings(isAdmin);
 
     const getImageUrl = (id?: string) =>
         id?.startsWith("http") ? id : `${API_URL}${uploadsPath}/${id}`;
@@ -383,7 +375,7 @@ const MyListingsPage: React.FC = () => {
             <Box sx={{mt: 2}}>
                 {isLoading ? (
                     <CircularProgress/>
-                ) : isError ? (
+                ) : isError && (tab === 0 ? errorActive : errorInactive) ? (
                     <Typography color="error">Failed to load.</Typography>
                 ) : processedListings.length === 0 ? (
                     <Box sx={{textAlign: 'center', mt: 4}}>

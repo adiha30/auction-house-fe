@@ -9,9 +9,9 @@ export const useWithdrawOffer = (listingId: string) => {
         mutationFn: (offerId: string) => withdrawOffer(offerId),
         onSuccess: () => {
             enqueueSnackbar("Offer withdrawn ✓", {variant: "success"});
-            queryClient.invalidateQueries({ queryKey: ["offers", listingId]});
+            queryClient.invalidateQueries({queryKey: ["offers", listingId]});
         },
         onError: () =>
-            enqueueSnackbar("Could not withdraw offer - please try again", { variant: "error" }),
+            enqueueSnackbar("Could not withdraw offer - please try again", {variant: "error"}),
     });
 };

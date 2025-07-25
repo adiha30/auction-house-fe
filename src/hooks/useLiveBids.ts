@@ -23,7 +23,8 @@ export const useLiveBids = () => {
             webSocketFactory: () =>
                 new SockJS(`${import.meta.env.VITE_API_URL.replace(/\$/, "")}/ws`),
             reconnectDelay: 3000,
-            debug: () => {},
+            debug: () => {
+            },
             onConnect: () => {
                 client.subscribe("/topic/live-bids", (m: IMessage) => {
                     try {
@@ -32,7 +33,8 @@ export const useLiveBids = () => {
                             const next = [bid, ...old];
                             return next.slice(0, 30);
                         });
-                    } catch {/* ignore */}
+                    } catch {/* ignore */
+                    }
                 });
             },
         });

@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query'
-import {getAllListings, ListingSummary} from '../api/listingApi'
+import {getAllListings, getListing, ListingDetails, ListingSummary} from '../api/listingApi'
 
 export const useListings = (category?: string) =>
     useQuery<ListingSummary[]>({
@@ -7,4 +7,11 @@ export const useListings = (category?: string) =>
         queryFn: async () =>
             (await getAllListings(category)).filter(l => l.status === 'OPEN'),
         staleTime: 30_000,
+    });
+
+export const useListing = (id?: string, enabled = true) =>
+    useQuery<ListingDetails>({
+        queryKey: ['listing', id],
+        queryFn: () => getListing(id!),
+        enabled: !!id && enabled,
     });

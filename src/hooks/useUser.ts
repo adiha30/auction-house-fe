@@ -1,10 +1,10 @@
 import {useQuery} from '@tanstack/react-query';
-import {getUser, User} from '../api/userApi';
+import {getUser} from '../api/userApi'; // Assuming the API function is named getUser
 
-export const useUser = (userId?: string) => {
-    return useQuery<User>({
-        queryKey: ['currentUser', userId],
-        enabled: !!userId,
+export function useUser(userId: string | undefined) {
+    return useQuery({
+        queryKey: ['user', userId],
         queryFn: () => getUser(userId!),
+        enabled: !!userId,
     });
-};
+}

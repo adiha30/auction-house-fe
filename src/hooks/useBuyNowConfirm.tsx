@@ -3,7 +3,8 @@ import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogT
 
 export function useBuyNowConfirm() {
     const [open, setOpen] = useState(false);
-    const onConfirmRef = useRef<() => void>(() => {});
+    const onConfirmRef = useRef<() => void>(() => {
+    });
     const priceRef = useRef<string>('this item');
 
     const ask = (onConfirm: () => void, price?: string) => {
@@ -19,12 +20,12 @@ export function useBuyNowConfirm() {
             <DialogContent>
                 <DialogContentText>
                     Are you sure you want to buy&nbsp;out&nbsp;
-                    <strong>{priceRef.current}</strong>&nbsp;right now? <br />
+                    <strong>{priceRef.current}</strong>&nbsp;right now? <br/>
                     This action cannot be undone.
                 </DialogContentText>
             </DialogContent>
 
-            <DialogActions sx={{ pr: 3, pb: 2 }}>
+            <DialogActions sx={{pr: 3, pb: 2}}>
                 <Button onClick={() => setOpen(false)}>Cancel</Button>
                 <Button
                     variant="contained"
@@ -40,5 +41,5 @@ export function useBuyNowConfirm() {
         </Dialog>
     );
 
-    return { ask, dialog };
+    return {ask, dialog};
 }
