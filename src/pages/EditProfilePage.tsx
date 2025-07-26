@@ -1,4 +1,4 @@
-import {Box, Button, Paper, TextField, Typography} from '@mui/material';
+import {Box, Button, Grid, Paper, TextField, Typography} from '@mui/material';
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
 import {useCurrentUser} from '../hooks/useCurrentUser';
@@ -10,6 +10,12 @@ const schema = Yup.object({
     username: Yup.string().min(3).max(20).required(),
     email: Yup.string().email().required(),
     password: Yup.string().min(8).max(20).notRequired(),
+    address: Yup.object({
+        street: Yup.string().required('Street is required'),
+        city: Yup.string().required('City is required'),
+        zipCode: Yup.string().required('Zip code is required'),
+        country: Yup.string().required('Country is required')
+    }).notRequired(),
     ccInfo: Yup.object({
         ccNumber: Yup.string()
             .matches(/^\d[\d\s-]{14,23}\d$/, 'Card number must be 16 digits')
@@ -50,6 +56,12 @@ export function EditProfileForm({userToEdit, currentUser, onSave, onCancel}: Edi
         username: userToEdit.username,
         email: userToEdit.email,
         password: '',
+        address: {
+            street: userToEdit.address?.street ?? '',
+            city: userToEdit.address?.city ?? '',
+            zipCode: userToEdit.address?.zipCode ?? '',
+            country: userToEdit.address?.country ?? ''
+        },
         ccInfo: {
             ccNumber: userToEdit.ccInfo?.ccNumber ? formatCreditCard(userToEdit.ccInfo.ccNumber) : '',
             ccExpiry: userToEdit.ccInfo?.ccExpiry ?? '',
@@ -87,36 +99,66 @@ export function EditProfileForm({userToEdit, currentUser, onSave, onCancel}: Edi
         >
             {({errors, touched, values, setFieldValue}) => (
                 <Form>
-                    <Field as={TextField} fullWidth margin="dense" label="Username" name="username"
-                           error={touched.username && !!errors.username}
-                           helperText={touched.username && errors.username}/>
-                    <Field as={TextField} fullWidth margin="dense" label="Email" name="email"
-                           error={touched.email && !!errors.email} helperText={touched.email && errors.email}/>
-                    <Field as={TextField} fullWidth margin="dense" label="Password" name="password" type="password"
-                           error={touched.password && !!errors.password}
-                           helperText={touched.password && errors.password}/>
-                    {!isCurrentUserAdmin && (
-                        <>
-                            <TextField fullWidth margin="dense" label="Card Number" name="ccInfo.ccNumber"
-                                       value={values.ccInfo?.ccNumber || ''}
-                                       onChange={(e) => setFieldValue('ccInfo.ccNumber', formatCreditCard(e.target.value))}
-                                       inputProps={{maxLength: 19}}
-                                       error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
-                                       helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}/>
-                            <TextField fullWidth margin="dense" label="Expiration Date (MM/YY)" name="ccInfo.ccExpiry"
-                                       value={values.ccInfo?.ccExpiry || ''}
-                                       onChange={(e) => setFieldValue('ccInfo.ccExpiry', formatExpiryDate(e.target.value))}
-                                       inputProps={{maxLength: 5}}
-                                       error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
-                                       helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}/>
-                            <Field as={TextField} fullWidth margin="dense" label="CVC" name="ccInfo.ccCvc"
-                                   inputProps={{maxLength: 4}}
-                                   error={touched.ccInfo?.ccCvc && !!errors.ccInfo?.ccCvc}
-                                   helperText={touched.ccInfo?.ccCvc && errors.ccInfo?.ccCvc}/>
-                        </>
-                    )}
-                    <Button sx={{mt: 2}} variant="contained" type="submit" disabled={update.isPending}>Save</Button>
-                    <Button sx={{mt: 2, ml: 2}} onClick={onCancel}>Cancel</Button>
+                    <Grid container spacing={4}>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="h6">Account Details</Typography>
+                            <Field as={TextField} fullWidth margin="dense" label="Username" name="username"
+                                   error={touched.username && !!errors.username}
+                                   helperText={touched.username && errors.username}/>
+                            <Field as={TextField} fullWidth margin="dense" label="Email" name="email"
+                                   error={touched.email && !!errors.email}
+                                   helperText={touched.email && errors.email}/>
+                            <Field as={TextField} fullWidth margin="dense" label="Password" name="password"
+                                   type="password"
+                                   error={touched.password && !!errors.password}
+                                   helperText={touched.password && errors.password}/>
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="h6" mt={2} sx={{mt: {xs: 2, md: 0}}}>Address</Typography>
+                            <Field as={TextField} fullWidth margin="dense" label="Street" name="address.street"
+                                   error={touched.address?.street && !!errors.address?.street}
+                                   helperText={touched.address?.street && errors.address?.street}/>
+                            <Field as={TextField} fullWidth margin="dense" label="City" name="address.city"
+                                   error={touched.address?.city && !!errors.address?.city}
+                                   helperText={touched.address?.city && errors.address?.city}/>
+                            <Field as={TextField} fullWidth margin="dense" label="Zip Code" name="address.zipCode"
+                                   error={touched.address?.zipCode && !!errors.address?.zipCode}
+                                   helperText={touched.address?.zipCode && errors.address?.zipCode}/>
+                            <Field as={TextField} fullWidth margin="dense" label="Country" name="address.country"
+                                   error={touched.address?.country && !!errors.address?.country}
+                                   helperText={touched.address?.country && errors.address?.country}/>
+                        </Grid>
+
+                        {!isCurrentUserAdmin && (
+                            <Grid item xs={12} md={4}>
+                                <Typography variant="h6" mt={2} sx={{mt: {xs: 2, md: 0}}}>Payment
+                                    Information</Typography>
+                                <TextField fullWidth margin="dense" label="Card Number" name="ccInfo.ccNumber"
+                                           value={values.ccInfo?.ccNumber || ''}
+                                           onChange={(e) => setFieldValue('ccInfo.ccNumber', formatCreditCard(e.target.value))}
+                                           inputProps={{maxLength: 19}}
+                                           error={touched.ccInfo?.ccNumber && !!errors.ccInfo?.ccNumber}
+                                           helperText={touched.ccInfo?.ccNumber && errors.ccInfo?.ccNumber}/>
+                                <TextField fullWidth margin="dense" label="Expiration Date (MM/YY)"
+                                           name="ccInfo.ccExpiry"
+                                           value={values.ccInfo?.ccExpiry || ''}
+                                           onChange={(e) => setFieldValue('ccInfo.ccExpiry', formatExpiryDate(e.target.value))}
+                                           inputProps={{maxLength: 5}}
+                                           error={touched.ccInfo?.ccExpiry && !!errors.ccInfo?.ccExpiry}
+                                           helperText={touched.ccInfo?.ccExpiry && errors.ccInfo?.ccExpiry}/>
+                                <Field as={TextField} fullWidth margin="dense" label="CVC" name="ccInfo.ccCvc"
+                                       inputProps={{maxLength: 4}}
+                                       error={touched.ccInfo?.ccCvc && !!errors.ccInfo?.ccCvc}
+                                       helperText={touched.ccInfo?.ccCvc && errors.ccInfo?.ccCvc}/>
+                            </Grid>
+                        )}
+                        <Grid item xs={12}>
+                            <Button sx={{mt: 2}} variant="contained" type="submit"
+                                    disabled={update.isPending}>Save</Button>
+                            <Button sx={{mt: 2, ml: 2}} onClick={onCancel}>Cancel</Button>
+                        </Grid>
+                    </Grid>
                 </Form>
             )}
         </Formik>
@@ -131,7 +173,7 @@ export default function EditProfilePage() {
 
     return (
         <Box mt={4} display="flex" justifyContent="center">
-            <Paper sx={{p: 4, width: 400}}>
+            <Paper sx={{p: 4, width: '100%', maxWidth: 1200}}>
                 <Typography variant="h5" mb={2}>Edit Profile</Typography>
                 <EditProfileForm
                     userToEdit={user}

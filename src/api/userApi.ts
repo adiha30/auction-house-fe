@@ -1,11 +1,21 @@
 import api from './axios';
 
+export interface Address {
+    street: string;
+    city: string;
+    zipCode: string;
+    country: string;
+}
+
 export interface User {
     userId: string;
     username: string;
     email: string;
     password?: string;
     role: 'USER' | 'ADMIN';
+    firstName: string;
+    lastName: string;
+    address: Address;
     ccInfo?: { ccNumber?: string; ccExpiry?: string; ccCvc?: string };
     active: boolean;
 }

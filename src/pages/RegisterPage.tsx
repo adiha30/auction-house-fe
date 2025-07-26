@@ -1,6 +1,6 @@
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
-import {Box, Button, Stack, TextField, Typography} from '@mui/material';
+import {Box, Button, Grid, Stack, TextField, Typography} from '@mui/material';
 import {useRegister} from '../hooks/useRegister';
 import {useNavigate} from 'react-router-dom';
 
@@ -16,6 +16,14 @@ const schema = Yup.object({
         .min(8, 'Password must be at least 8 characters')
         .max(20, 'Password must be 20 characters or less')
         .required(),
+    firstName: Yup.string().required('First name is required'),
+    lastName: Yup.string().required('Last name is required'),
+    address: Yup.object({
+        street: Yup.string().required('Street is required'),
+        city: Yup.string().required('City is required'),
+        zipCode: Yup.string().required('Zip code is required'),
+        country: Yup.string().required('Country is required')
+    }).required(),
     ccInfo: Yup.object({
         cardNumber: Yup.string()
             .matches(/^\d[\d\s-]{14,23}\d$/, 'Card number must be 16 digits')
@@ -36,37 +44,122 @@ export default function RegisterPage() {
 
     return (
         <Formik
-            initialValues={{username: '', email: '', password: '', ccInfo: {}}}
+            initialValues={{
+                username: '',
+                email: '',
+                password: '',
+                firstName: '',
+                lastName: '',
+                address: {street: '', city: '', zipCode: '', country: ''},
+                ccInfo: {}
+            }}
             validationSchema={schema}
             onSubmit={(values) => register.mutateAsync(values).then(() => nav('/dashboard'))}
         >
             {({errors, touched}) => (
                 <Form>
-                    <Box display="flex" flexDirection="column" gap={2} width={300} mx="auto" mt={8}>
-                        <Field
-                            as={TextField}
-                            label="Username"
-                            name="username"
-                            error={touched.username && !!errors.username}
-                            helperText={touched.username && errors.username}
-                        />
-                        <Field
-                            as={TextField}
-                            label="Email"
-                            name="email"
-                            type="email"
-                            error={touched.email && !!errors.email}
-                            helperText={touched.email && errors.email}
-                        />
-                        <Field
-                            as={TextField}
-                            label="Password"
-                            name="password"
-                            type="password"
-                            error={touched.password && !!errors.password}
-                            helperText={touched.password && errors.password}
-                        />
-                        <Button variant="contained" type="submit" disabled={register.isPending}>
+                    <Box display="flex" flexDirection="column" gap={2} width={{xs: '90%', sm: 500}} mx="auto" mt={8}>
+                        <Typography variant="h4" component="h1" gutterBottom>
+                            Register
+                        </Typography>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <Field
+                                    as={TextField}
+                                    label="Username"
+                                    name="username"
+                                    fullWidth
+                                    error={touched.username && !!errors.username}
+                                    helperText={touched.username && errors.username}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Field
+                                    as={TextField}
+                                    label="Email"
+                                    name="email"
+                                    type="email"
+                                    fullWidth
+                                    error={touched.email && !!errors.email}
+                                    helperText={touched.email && errors.email}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Field
+                                    as={TextField}
+                                    label="Password"
+                                    name="password"
+                                    type="password"
+                                    fullWidth
+                                    error={touched.password && !!errors.password}
+                                    helperText={touched.password && errors.password}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Field
+                                    as={TextField}
+                                    label="First Name"
+                                    name="firstName"
+                                    fullWidth
+                                    error={touched.firstName && !!errors.firstName}
+                                    helperText={touched.firstName && errors.firstName}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Field
+                                    as={TextField}
+                                    label="Last Name"
+                                    name="lastName"
+                                    fullWidth
+                                    error={touched.lastName && !!errors.lastName}
+                                    helperText={touched.lastName && errors.lastName}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Typography variant="h6" mt={2}>Address</Typography>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Field
+                                    as={TextField}
+                                    label="Street"
+                                    name="address.street"
+                                    fullWidth
+                                    error={touched.address?.street && !!errors.address?.street}
+                                    helperText={touched.address?.street && errors.address?.street}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Field
+                                    as={TextField}
+                                    label="City"
+                                    name="address.city"
+                                    fullWidth
+                                    error={touched.address?.city && !!errors.address?.city}
+                                    helperText={touched.address?.city && errors.address?.city}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Field
+                                    as={TextField}
+                                    label="Zip Code"
+                                    name="address.zipCode"
+                                    fullWidth
+                                    error={touched.address?.zipCode && !!errors.address?.zipCode}
+                                    helperText={touched.address?.zipCode && errors.address?.zipCode}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <Field
+                                    as={TextField}
+                                    label="Country"
+                                    name="address.country"
+                                    fullWidth
+                                    error={touched.address?.country && !!errors.address?.country}
+                                    helperText={touched.address?.country && errors.address?.country}
+                                />
+                            </Grid>
+                        </Grid>
+                        <Button variant="contained" type="submit" disabled={register.isPending} sx={{mt: 2}}>
                             Register
                         </Button>
 

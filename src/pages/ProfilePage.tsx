@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Grid,
     Paper,
     Typography,
 } from '@mui/material';
@@ -45,19 +46,44 @@ export default function ProfilePage() {
     };
 
     return (
-        <Box sx={{width: '100%', maxWidth: 900, mx: 'auto', mt: 4}}>
+        <Box sx={{width: '100%', maxWidth: 1200, mx: 'auto', mt: 4}}>
             <Paper sx={{p: 4, width: '100%', mb: 2}}>
                 <Typography variant="h5" mb={2}>
                     My Profile
                 </Typography>
-                <Typography><b>Username:</b> {user.username}</Typography>
-                <Typography><b>Email:</b> {user.email}</Typography>
-                <Typography><b>Role:</b> {pretty(user.role)}</Typography>
-                {user.ccInfo?.ccNumber && (
-                    <Typography>
-                        <b>Card:</b> **** **** **** {user.ccInfo.ccNumber.slice(-4)}
-                    </Typography>
-                )}
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={4}>
+                        <Typography variant="h6" gutterBottom>Account Details</Typography>
+                        <Typography><b>Username:</b> {user.username}</Typography>
+                        <Typography><b>Email:</b> {user.email}</Typography>
+                        <Typography><b>Name:</b> {user.firstName} {user.lastName}</Typography>
+                        <Typography><b>Role:</b> {pretty(user.role)}</Typography>
+                        <Typography><b>Status:</b> {user.active ? 'Active' : 'Inactive'}</Typography>
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        {user.address && (
+                            <>
+                                <Typography variant="h6" gutterBottom>Address</Typography>
+                                <Typography><b>Street:</b> {user.address.street}</Typography>
+                                <Typography><b>City:</b> {user.address.city}</Typography>
+                                <Typography><b>Zip Code:</b> {user.address.zipCode}</Typography>
+                                <Typography><b>Country:</b> {user.address.country}</Typography>
+                            </>
+                        )}
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                        {user.ccInfo?.ccNumber && (
+                            <>
+                                <Typography variant="h6" gutterBottom>Payment Information</Typography>
+                                <Typography>
+                                    <b>Card Number:</b> **** **** **** {user.ccInfo.ccNumber.slice(-4)}
+                                </Typography>
+                            </>
+                        )}
+                    </Grid>
+                </Grid>
             </Paper>
 
             <Box sx={{display: 'flex', gap: 2, mb: 2, justifyContent: 'flex-start'}}>
