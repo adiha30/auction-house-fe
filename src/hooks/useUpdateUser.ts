@@ -8,9 +8,28 @@ export const useUpdateUser = () => {
     const qc = useQueryClient();
 
     return useMutation({
-        mutationFn: (body: Record<string, unknown> & { userId?: string }) => {
+        mutationFn: (body: Record<string, unknown> & { userId?: string, address?: Record<string, string> }) => {
             const idToUpdate = body.userId || loggedInUserId!;
-            const updatePayload = {...body};
+            const isSelfUpdate = idToUpdate === loggedInUserId;
+
+            if (isSelfUpdate && body.address) {
+                const {street, city, zipCode, country} = body.address;
+                if (!street || !city || !zipCode || !country) {
+                    return Promise.reject(new Error('Address must be complete'));
+                }
+            }
+
+            const updatePayload = {
+                ...body,
+                address: body.address
+                    ? {
+                        street: body.address.street,
+                        city: body.address.city,
+                        zipCode: body.address.zipCode,
+                        country: body.address.country,
+                    }
+                    : undefined,
+            };
             delete updatePayload.userId;
 
             return updateUser(idToUpdate, updatePayload);
@@ -22,6 +41,12 @@ export const useUpdateUser = () => {
             qc.invalidateQueries({queryKey: ['users']});
             qc.invalidateQueries({queryKey: ['currentUser', updatedUserId]});
         },
-        onError: () => enqueueSnackbar('Update failed', {variant: 'error'}),
+        onError: (error) => {
+            if (error instanceof Error && error.message === 'Address must be complete') {
+                enqueueSnackbar('Your address must be complete.', {variant: 'error'});
+            } else {
+                enqueueSnackbar('Update failed', {variant: 'error'});
+            }
+        },
     });
 };
