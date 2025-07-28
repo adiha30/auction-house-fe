@@ -16,6 +16,7 @@ export interface User {
     firstName: string;
     lastName: string;
     address: Address;
+    phoneNumber: string;
     ccInfo?: { ccNumber?: string; ccExpiry?: string; ccCvc?: string };
     active: boolean;
 }

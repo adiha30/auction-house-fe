@@ -10,6 +10,7 @@ const schema = Yup.object({
     username: Yup.string().min(3).max(20).required(),
     email: Yup.string().email().required(),
     password: Yup.string().min(8).max(20).notRequired(),
+    phoneNumber: Yup.string().matches(/^[0-9]+$/, "Must be only digits").min(10, 'Must be exactly 10 digits').max(10, 'Must be exactly 10 digits').required('Phone number is required'),
     address: Yup.object({
         street: Yup.string().required('Street is required'),
         city: Yup.string().required('City is required'),
@@ -56,6 +57,7 @@ export function EditProfileForm({userToEdit, currentUser, onSave, onCancel}: Edi
         username: userToEdit.username,
         email: userToEdit.email,
         password: '',
+        phoneNumber: userToEdit.phoneNumber ?? '',
         address: {
             street: userToEdit.address?.street ?? '',
             city: userToEdit.address?.city ?? '',
@@ -74,7 +76,7 @@ export function EditProfileForm({userToEdit, currentUser, onSave, onCancel}: Edi
             initialValues={initial}
             validationSchema={schema}
             onSubmit={(values) => {
-                const payload: any = {...values};
+                const payload: Partial<User> & { userId?: string } = {...values};
 
                 if (isCurrentUserAdmin && userToEdit.userId !== currentUser.userId) {
                     payload.userId = userToEdit.userId;
@@ -108,6 +110,9 @@ export function EditProfileForm({userToEdit, currentUser, onSave, onCancel}: Edi
                             <Field as={TextField} fullWidth margin="dense" label="Email" name="email"
                                    error={touched.email && !!errors.email}
                                    helperText={touched.email && errors.email}/>
+                            <Field as={TextField} fullWidth margin="dense" label="Phone Number" name="phoneNumber"
+                                   error={touched.phoneNumber && !!errors.phoneNumber}
+                                   helperText={touched.phoneNumber && errors.phoneNumber}/>
                             <Field as={TextField} fullWidth margin="dense" label="Password" name="password"
                                    type="password"
                                    error={touched.password && !!errors.password}

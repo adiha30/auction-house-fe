@@ -149,8 +149,6 @@ export function useNotifications() {
                         }
                     } catch (err) {
                         console.error("Failed to parse notification message", err);
-                        console.log(m);
-                        console.log(JSON.parse(m.body));
                     }
                 })
             },

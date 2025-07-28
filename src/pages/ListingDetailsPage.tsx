@@ -48,6 +48,8 @@ import {useCurrentUser} from "../hooks/useCurrentUser.ts";
 import {enqueueSnackbar} from "notistack";
 import {pretty} from "./CreateListingPage.tsx";
 import {deleteListingAsAdmin} from "../api/adminApi.ts";
+import {useUser} from "../hooks/useUser.ts";
+import {ContactInfoCard} from "../components/ContactInfoCard.tsx";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
@@ -78,10 +80,12 @@ export default function ListingDetailsPage() {
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
     const {data: bids = [], isLoading: bidsLoading, error: bidsError} = useBids(id!);
+    const {data: winner} = useUser(listing?.winner?.userId);
+    const {data: seller} = useUser(listing?.seller?.userId);
 
     const countdown = useCountdown(listing?.endTime ?? '');
 
-    const isSeller = listing?.seller.userId === userId;
+    const isSeller = userId === seller?.userId;
     const wantOffers = isSeller || !!userId;
     const {data: offers = [], isLoading: offersLoading} = useOffers(id!, wantOffers);
 
@@ -148,6 +152,9 @@ export default function ListingDetailsPage() {
             resultAmount = listing.finalPrice ?? highestBid;
         }
     }
+
+    const isWinner = userId === winner?.userId;
+    const listingEnded = listing.status !== 'OPEN';
 
     return (
         <Box mt={4} display="flex" justifyContent="center">
@@ -240,6 +247,36 @@ export default function ListingDetailsPage() {
                     {listing.status === 'OPEN' && token && !isSeller && !isAdmin && (
                         <BidForm highestBid={highestBid} minIncrement={minIncrement} buyNowPrice={listing.buyNowPrice}
                                  createBid={createBid}/>
+                    )}
+                    {listingEnded && (
+                        <Box mt={4} p={2} sx={{
+                            border: '2px dashed',
+                            borderColor: 'primary.main',
+                            borderRadius: 2,
+                            textAlign: 'center'
+                        }}>
+                            <Typography variant="h5" gutterBottom sx={{fontWeight: 'bold'}}>
+                                Listing Ended
+                            </Typography>
+                            {isAdmin && winner && (
+                                <>
+                                    <ContactInfoCard user={listing.seller} title="Seller Information"/>
+                                    <ContactInfoCard user={winner} title="Winner Information"/>
+                                </>
+                            )}
+                            {isSeller && winner && (
+                                <>
+                                    <Typography>Your contact information has been shared with the winner.</Typography>
+                                    <ContactInfoCard user={winner} title="Winner Information"/>
+                                </>
+                            )}
+                            {isWinner && winner && (
+                                <>
+                                    <Typography>Your contact information has been shared with the seller.</Typography>
+                                    <ContactInfoCard user={listing.seller} title="Seller Information"/>
+                                </>
+                            )}
+                        </Box>
                     )}
                     {offersAllowed && (
                         <>
