@@ -31,6 +31,7 @@ export interface ListingDetails extends ListingSummary {
     category: string;
     bids: Bid[];
     seller: User;
+    winner?: User;
     winnerId?: string;
     finalPrice: number;
     buyNowPrice: number;

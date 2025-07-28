@@ -25,8 +25,6 @@ export const getSellerListings = async (userId: string, page = 0, size = 10): Pr
         params: {page, size}
     });
 
-    console.log('[adminApi] Received listings from API:', listings);
-
     const resolvedContent = listings.map(listing => ({
         ...listing,
         item: {

@@ -24,7 +24,8 @@ import {
     Typography
 } from "@mui/material";
 import {deleteListingAsAdmin} from "../api/adminApi.ts";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {useBids} from "../hooks/useBids.ts";
 
 interface ViewUserDialogProps {
     open: boolean;
@@ -32,17 +33,33 @@ interface ViewUserDialogProps {
     user: User;
 }
 
-const getPriceInfo = (listing: ListingDetails) => {
-    switch (listing.status) {
-        case "OPEN":
-            return `Current Price: $${listing.currentPrice.toLocaleString()}`;
-        case "SOLD":
-            return `Sold for: $${listing.currentPrice.toLocaleString()}`;
-        case "REMOVED":
-            return `Removed`;
-        case "CLOSED":
-            return `Unsold`;
-    }
+function ListingPriceInfo({listing}: { listing: ListingDetails }) {
+    const {data: bids = []} = useBids(listing.listingId);
+    const [priceInfo, setPriceInfo] = useState('');
+
+    useEffect(() => {
+        const sortedBids = [...bids].sort((a, b) => b.amount - a.amount);
+        const highestBid = sortedBids[0]?.amount ?? listing.startPrice;
+
+        switch (listing.status) {
+            case "OPEN":
+                setPriceInfo(`Current Price: $${highestBid}`);
+                break;
+            case "SOLD":
+                setPriceInfo(`Sold for: $${listing.finalPrice.toLocaleString()}`);
+                break;
+            case "REMOVED":
+                setPriceInfo(`Removed`);
+                break;
+            case "CLOSED":
+                setPriceInfo(`Unsold`);
+                break;
+            default:
+                setPriceInfo('');
+        }
+    }, [bids, listing]);
+
+    return <>{priceInfo}</>;
 }
 
 const reasons = [
@@ -51,7 +68,6 @@ const reasons = [
 ];
 
 export default function ViewUserDialog({open, onClose, user}: ViewUserDialogProps) {
-    console.log('[ViewUserDialog] Received user prop:', user);
     const [page, setPage] = useState(1);
     const {data: listingsPage, isLoading, isError, error} = useSellerHistory(user?.userId, page - 1, 5);
     const queryClient = useQueryClient();
@@ -119,7 +135,7 @@ export default function ViewUserDialog({open, onClose, user}: ViewUserDialogProp
                                                         Status: {listing.status}
                                                     </Typography>
                                                     <br/>
-                                                    {getPriceInfo(listing)}
+                                                    <ListingPriceInfo listing={listing}/>
                                                 </>
                                             }
                                         />

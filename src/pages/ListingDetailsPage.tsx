@@ -80,11 +80,12 @@ export default function ListingDetailsPage() {
     const {data: listing, isLoading, error} = useListing(id!);
     const {data: meta} = useCategoryMetadata(listing?.category);
     const {data: bids = [], isLoading: bidsLoading, error: bidsError} = useBids(id!);
-    const {data: winner} = useUser(listing?.winnerId);
+    const {data: winner} = useUser(listing?.winner?.userId);
+    const {data: seller} = useUser(listing?.seller?.userId);
 
     const countdown = useCountdown(listing?.endTime ?? '');
 
-    const isSeller = listing?.seller.userId === userId;
+    const isSeller = userId === seller?.userId;
     const wantOffers = isSeller || !!userId;
     const {data: offers = [], isLoading: offersLoading} = useOffers(id!, wantOffers);
 
@@ -152,7 +153,7 @@ export default function ListingDetailsPage() {
         }
     }
 
-    const isWinner = user?.userId === listing?.winnerId;
+    const isWinner = userId === winner?.userId;
     const listingEnded = listing.status !== 'OPEN';
 
     return (
@@ -248,7 +249,12 @@ export default function ListingDetailsPage() {
                                  createBid={createBid}/>
                     )}
                     {listingEnded && (
-                        <Box mt={4} p={2} sx={{border: '2px dashed', borderColor: 'primary.main', borderRadius: 2, textAlign: 'center'}}>
+                        <Box mt={4} p={2} sx={{
+                            border: '2px dashed',
+                            borderColor: 'primary.main',
+                            borderRadius: 2,
+                            textAlign: 'center'
+                        }}>
                             <Typography variant="h5" gutterBottom sx={{fontWeight: 'bold'}}>
                                 Listing Ended
                             </Typography>
