@@ -57,8 +57,8 @@ export default function ProfilePage() {
                         <Typography><b>Username:</b> {user.username}</Typography>
                         <Typography><b>Email:</b> {user.email}</Typography>
                         <Typography><b>Name:</b> {user.firstName} {user.lastName}</Typography>
+                        <Typography><b>Phone Number:</b> {user.phoneNumber}</Typography>
                         <Typography><b>Role:</b> {pretty(user.role)}</Typography>
-                        <Typography><b>Status:</b> {user.active ? 'Active' : 'Inactive'}</Typography>
                     </Grid>
 
                     <Grid item xs={12} md={4}>

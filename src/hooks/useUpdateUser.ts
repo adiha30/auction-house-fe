@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {enqueueSnackbar} from 'notistack';
-import {updateUser} from '../api/userApi';
+import {updateUser, Address} from '../api/userApi';
 import {useAuth} from '../context/AuthContext';
 
 export const useUpdateUser = () => {
@@ -8,7 +8,7 @@ export const useUpdateUser = () => {
     const qc = useQueryClient();
 
     return useMutation({
-        mutationFn: (body: Record<string, unknown> & { userId?: string, address?: Record<string, string> }) => {
+        mutationFn: (body: Record<string, unknown> & { userId?: string, address?: Address }) => {
             const idToUpdate = body.userId || loggedInUserId!;
             const isSelfUpdate = idToUpdate === loggedInUserId;
 

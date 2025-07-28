@@ -18,6 +18,7 @@ const schema = Yup.object({
         .required(),
     firstName: Yup.string().required('First name is required'),
     lastName: Yup.string().required('Last name is required'),
+    phoneNumber: Yup.string().matches(/^[0-9]+$/, "Must be only digits").min(10, 'Must be exactly 10 digits').max(10, 'Must be exactly 10 digits').required('Phone number is required'),
     address: Yup.object({
         street: Yup.string().required('Street is required'),
         city: Yup.string().required('City is required'),
@@ -50,6 +51,7 @@ export default function RegisterPage() {
                 password: '',
                 firstName: '',
                 lastName: '',
+                phoneNumber: '',
                 address: {street: '', city: '', zipCode: '', country: ''},
                 ccInfo: {}
             }}
@@ -82,6 +84,16 @@ export default function RegisterPage() {
                                     fullWidth
                                     error={touched.email && !!errors.email}
                                     helperText={touched.email && errors.email}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Field
+                                    as={TextField}
+                                    label="Phone Number"
+                                    name="phoneNumber"
+                                    fullWidth
+                                    error={touched.phoneNumber && !!errors.phoneNumber}
+                                    helperText={touched.phoneNumber && errors.phoneNumber}
                                 />
                             </Grid>
                             <Grid item xs={12}>
