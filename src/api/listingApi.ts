@@ -122,7 +122,14 @@ export const getFeaturedListings = async (limit = 5) =>
 
 export const searchListings = (query: string, sort = 'recent', limit = 40) =>
     api.get<ListingSummary[]>(`${listingsPath}/search`, {params: {query, sort, limit}})
-        .then(res => res.data);
+        .then(res =>
+            res.data.map(listing => ({
+                ...listing,
+                item: {
+                    ...listing.item,
+                    imageIds: resolveImageUrls(listing.item.imageIds)
+                },
+            })));
 
 export const getUserWonListings = (sort: 'recent' | 'title' = 'recent', page: number = 0, limit: number = 10, order: 'asc' | 'desc' = "desc") =>
     api.get<ListingDetails[]>(`${listingsPath}/won`, {params: {sort, page, limit, order}})
