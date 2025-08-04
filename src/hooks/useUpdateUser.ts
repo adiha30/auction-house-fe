@@ -1,8 +1,18 @@
+/**
+ * Hook for updating user profile information.
+ * Provides functionality to update a user's profile data with validation for address completeness.
+ */
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {enqueueSnackbar} from 'notistack';
 import {updateUser, Address} from '../api/userApi';
 import {useAuth} from '../context/AuthContext';
 
+/**
+ * Custom hook that provides functionality to update a user's profile information.
+ * Can be used to update the logged-in user or another user (for admins).
+ * Includes validation for address completeness when updating the current user's address.
+ * @returns {Object} A mutation object with functions to update a user and track mutation state
+ */
 export const useUpdateUser = () => {
     const {userId: loggedInUserId} = useAuth()!;
     const qc = useQueryClient();

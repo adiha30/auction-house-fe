@@ -1,3 +1,18 @@
+/**
+ * RegisterPage Component
+ *
+ * Provides a comprehensive user registration form with the following fields:
+ * - Username
+ * - Email
+ * - Password
+ * - First name and last name
+ * - Phone number
+ * - Address information (street, city, zip code, country)
+ * - Optional credit card information
+ *
+ * Uses Formik for form handling and Yup for complex validation rules.
+ * Upon successful registration, redirects to the dashboard page.
+ */
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
 import {Box, Button, Grid, Stack, TextField, Typography} from '@mui/material';

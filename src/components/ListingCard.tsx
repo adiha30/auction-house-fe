@@ -1,3 +1,19 @@
+/**
+ * ListingCard component displays a summary card for a listing, including image, title, price, and watch functionality.
+ *
+ * @module ListingCard
+ *
+ * @requires @mui/material
+ * @requires react-router-dom
+ * @requires @mui/icons-material/Visibility
+ * @requires @mui/icons-material/VisibilityOff
+ * @requires @tanstack/react-query
+ * @requires ../api/listingApi
+ * @requires ../hooks/useCountdown
+ * @requires ../utils/text
+ * @requires ../api/watchApi
+ */
+
 import {Box, Card, CardContent, CardMedia, IconButton, Stack, Typography} from '@mui/material';
 import {useNavigate} from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -9,16 +25,31 @@ import {useCountdown} from '../hooks/useCountdown.ts';
 import {toTitleCase} from '../utils/text.ts';
 import {isWatching, toggleWatch} from '../api/watchApi.ts';
 
+/**
+ * Props for the ListingCard component.
+ */
 type ListingCardProps = {
     listing: ListingSummary;
     token: string | null;
     isSeller?: boolean;
 };
 
+/**
+ * Renders a card displaying a listing summary with image, title, and watch button.
+ *
+ * @param {ListingCardProps} props - The props for the component.
+ * @param {ListingSummary} props.listing - The listing to display.
+ * @param {string | null} props.token - The authentication token of the current user.
+ * @param {boolean} [props.isSeller] - Whether the current user is the seller of the listing.
+ * @returns {JSX.Element} The rendered ListingCard component.
+ */
 export default function ListingCard({listing, token, isSeller = false}: ListingCardProps) {
     const nav = useNavigate();
     const queryClient = useQueryClient();
 
+    /**
+     * Query to check if the current user is watching the listing.
+     */
     const {data: watching} = useQuery({
         queryKey: ['watching', listing.listingId],
         queryFn: () => isWatching(listing.listingId),
@@ -26,6 +57,9 @@ export default function ListingCard({listing, token, isSeller = false}: ListingC
         staleTime: 60_000,
     });
 
+    /**
+     * Mutation to toggle the watch status of the listing.
+     */
     const {mutate: watchListing} = useMutation({
         mutationFn: () => toggleWatch(listing.listingId, isSeller),
         onSuccess: () => {

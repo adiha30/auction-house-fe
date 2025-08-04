@@ -1,10 +1,20 @@
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+/**
+ * Hook for creating offers on listings.
+ * Provides functionality to make offers on listings with address validation.
+ */
+import {useMutation, UseMutationResult, useQueryClient} from "@tanstack/react-query";
 import {createOffer, OfferResponse} from "../api/offerApi";
 import {enqueueSnackbar} from "notistack";
 import {useCurrentUser} from "./useCurrentUser.ts";
 import {useNavigate} from "react-router-dom";
 
-export const useCreateOffer = (listingId: string) => {
+/**
+ * Custom hook that provides functionality to create an offer on a listing.
+ * Validates user address, handles success/error states, and invalidates related queries.
+ * @param {string} listingId - The ID of the listing to make an offer on
+ * @returns {Object} A mutation object with functions to create an offer and track mutation state
+ */
+export const useCreateOffer = (listingId: string): UseMutationResult<OfferResponse, Error, number, unknown> => {
     const queryClient = useQueryClient();
     const {data: user} = useCurrentUser();
     const nav = useNavigate();

@@ -1,4 +1,15 @@
-import {MouseEvent, useState} from "react";
+/**
+ * NotificationMenu displays a menu of user notifications, allowing marking as read/unread and navigation.
+ *
+ * @module components/NotificationMenu
+ */
+
+/**
+ * Renders a notification menu with unread count and notification actions.
+ *
+ * @returns The notification menu component.
+ */
+import {JSX, MouseEvent, useState} from "react";
 import {
     Badge,
     Box,
@@ -18,7 +29,12 @@ import MarkEmailUnreadIcon from "@mui/icons-material/MarkEmailUnread";
 import {Notification, useNotifications} from "../hooks/useNotifications";
 import {useNavigate} from "react-router-dom";
 
-export default function NotificationMenu() {
+/**
+ * NotificationMenu displays a menu of user notifications, allowing marking as read/unread and navigation.
+ *
+ * @returns {JSX.Element} The notification menu component.
+ */
+export default function NotificationMenu(): JSX.Element {
     const navigate = useNavigate();
     const {
         notifications,

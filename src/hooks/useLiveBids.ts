@@ -1,8 +1,15 @@
+/**
+ * Hook for receiving real-time bid updates via WebSockets.
+ * Establishes a connection to the server's WebSocket endpoint to receive live bid notifications.
+ */
 import {Client, IMessage} from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import {useEffect, useRef} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 
+/**
+ * Interface representing a live bid notification received through WebSockets.
+ */
 export interface LiveBid {
     listingId: string;
     title: string;
@@ -14,7 +21,12 @@ export interface LiveBid {
     lastName: string;
 }
 
-export const useLiveBids = () => {
+/**
+ * Custom hook that establishes a WebSocket connection to receive live bid notifications.
+ * Stores incoming bids in the React Query cache under the "liveBids" key.
+ * @returns {void}
+ */
+export const useLiveBids = (): void => {
     const queryClient = useQueryClient();
     const sockRef = useRef<Client | null>(null);
 

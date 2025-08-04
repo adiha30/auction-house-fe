@@ -1,3 +1,9 @@
+/**
+ * ActiveBidsSection displays a horizontal scrollable list of the user's active bids, grouped by listing.
+ * It highlights whether the user is currently leading or outbid, and shows time left for each bid.
+ *
+ * @module components/ActiveBidsSection
+ */
 import {useNavigate} from 'react-router-dom';
 import {useRef} from 'react';
 import {Box, Card, CardContent, CardMedia, Chip, IconButton, Stack, Typography} from '@mui/material';
@@ -7,6 +13,11 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {ActiveBid} from '../hooks/useBids';
 import {useCountdown} from '../hooks/useCountdown';
 
+/**
+ * Card component displaying information about a single active bid.
+ *
+ * @param bid - The active bid to display.
+ */
 function BidCard({bid}: { bid: ActiveBid }) {
     const nav = useNavigate();
     const {timeLeft, isUrgent} = useCountdown(bid.endTime);
@@ -47,6 +58,11 @@ function BidCard({bid}: { bid: ActiveBid }) {
     );
 }
 
+/**
+ * Displays a section with all of the user's active bids, grouped by listing.
+ *
+ * @param bids - Array of active bids for the current user.
+ */
 export default function ActiveBidsSection({bids}: { bids: ActiveBid[] }) {
     const scrollRef = useRef<HTMLDivElement>(null);
 

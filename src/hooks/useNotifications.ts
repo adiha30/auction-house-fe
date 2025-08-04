@@ -1,3 +1,7 @@
+/**
+ * Hook and types for managing user notifications.
+ * Provides functionality to fetch, mark as read/unread, and receive real-time notifications via WebSockets.
+ */
 import axios from "../api/axios.ts";
 import {useAuth} from "../context/AuthContext.tsx";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
@@ -9,6 +13,9 @@ import {invalidateFromNotification} from "../utils/invalidateMap.ts";
 import {useCurrentUser} from "./useCurrentUser.ts";
 import {Role} from "../api/authApi.ts";
 
+/**
+ * Enum of all possible notification types in the system.
+ */
 export enum NotificationType {
     NEW_BID = "NEW_BID",
     OUTBID = "OUTBID",
@@ -26,6 +33,9 @@ export enum NotificationType {
     LISTING_REMOVED_BY_ADMIN = "LISTING_REMOVED_BY_ADMIN",
 }
 
+/**
+ * Interface representing a notification in the system.
+ */
 export interface Notification {
     notificationId: string;
     type: NotificationType;
@@ -37,17 +47,50 @@ export interface Notification {
     read: boolean;
 }
 
+/**
+ * Fetches all notifications for the current user.
+ * @returns {Promise<Notification[]>} Promise resolving to an array of notifications
+ */
+/**
+ * Fetches all notifications for the current user.
+ */
 const fetchNotifications = async () =>
     (await axios.get<Notification[]>("/notifications")).data;
 
-const fetchUnreadCount = async () =>
+/**
+ * Fetches the count of unread notifications for the current user.
+ * @returns {Promise<number>} Promise resolving to the count of unread notifications
+ */
+const fetchUnreadCount = async (): Promise<number> =>
     (await axios.get<{ unread: number }>("/notifications/count")).data.unread;
 
-const markRead = (id: string) => axios.post(`/notifications/${id}/read`).then(() => {
-});
-const markUnread = (id: string) => axios.post(`/notifications/${id}/unread`).then(() => {
+/**
+ * Marks a notification as read.
+ * @param {string} id - The ID of the notification to mark as read
+ * @returns {Promise<void>} Promise that resolves when the operation completes
+ */
+const markRead = (id: string): Promise<void> => axios.post(`/notifications/${id}/read`).then(() => {
 });
 
+/**
+ * Marks a notification as unread.
+ * @param {string} id - The ID of the notification to mark as unread
+ * @returns {Promise<void>} Promise that resolves when the operation completes
+ */
+const markUnread = (id: string): Promise<void> => axios.post(`/notifications/${id}/unread`).then(() => {
+});
+
+/**
+ * Custom hook that provides functionality to manage notifications.
+ * Includes fetching notifications, marking them as read/unread, and receiving real-time updates.
+ * @returns {Object} Object containing notifications, counts, and functions to manage notifications
+ * @returns {Notification[]} notifications - Array of user notifications
+ * @returns {number} unreadCount - Count of unread notifications
+ * @returns {boolean} isLoadingNotifications - Whether notifications are being loaded
+ * @returns {boolean} isLoadingUnreadCount - Whether unread count is being loaded
+ * @returns {Function} markToggle - Function to toggle read/unread status of a notification
+ * @returns {Function} markAllAsRead - Function to mark all notifications as read
+ */
 export function useNotifications() {
     const {userId, token} = useAuth()!;
     const queryClient = useQueryClient();

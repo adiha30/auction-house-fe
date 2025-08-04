@@ -1,3 +1,15 @@
+/**
+ * ListingsWonPage Component
+ *
+ * Displays all listings won by the authenticated user with viewing and sorting options:
+ * - Multiple view modes (list and gallery)
+ * - Sorting options (by title, recency)
+ * - Pagination for managing large collections
+ * - Dispute creation functionality for purchased items
+ * - Detailed listing information with seller contact data
+ *
+ * This component is only available to non-admin users and redirects admins away.
+ */
 import React, {useEffect, useState} from "react";
 import {
     Avatar,

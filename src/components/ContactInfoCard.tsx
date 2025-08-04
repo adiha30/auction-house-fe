@@ -1,12 +1,30 @@
+/**
+ * ContactInfoCard displays a user's contact information in a styled card, including name, email, phone, and address.
+ *
+ * @module components/ContactInfoCard
+ */
+
 import {Card, CardContent, Typography} from '@mui/material';
 import {User} from '../api/userApi';
 import {pretty} from "../pages/CreateListingPage.tsx";
 
-interface ContactInfoCardProps {
+
+/**
+ * Props for the ContactInfoCard component.
+ * @property user - The user whose contact information will be displayed.
+ * @property title - The title to display at the top of the card.
+ */
+type ContactInfoCardProps = {
     user: User;
     title: string;
 }
 
+/**
+ * Renders a card with the contact information of a user.
+ *
+ * @param user - The user whose contact info is displayed.
+ * @param title - The title to display at the top of the card.
+ */
 export function ContactInfoCard({user, title}: ContactInfoCardProps) {
     return (
         <Card sx={{mt: 2, boxShadow: 3, borderRadius: 3, background: 'linear-gradient(135deg, #e3f2fd 0%, #fff 100%)'}}>
@@ -43,4 +61,3 @@ export function ContactInfoCard({user, title}: ContactInfoCardProps) {
         </Card>
     );
 }
-

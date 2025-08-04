@@ -1,4 +1,18 @@
-import {useRef} from 'react';
+/**
+ * Section displays a horizontally scrollable section of listing cards with a title and optional navigation arrows.
+ *
+ * @module components/Section
+ */
+
+/**
+ * Renders a section with a title and a horizontal list of listing cards.
+ *
+ * @param title - The section title.
+ * @param listings - Array of listings to display.
+ * @param token - The authentication token of the current user.
+ * @param userId - The ID of the current user (optional).
+ */
+import {JSX, useRef} from 'react';
 import {Box, IconButton, Typography} from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -6,6 +20,16 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import {ListingSummary} from '../api/listingApi';
 import ListingCard from './ListingCard.tsx';
 
+/**
+ * Renders a section with a title and a horizontal list of listing cards.
+ *
+ * @param {Object} props - The component props.
+ * @param {string} props.title - The section title.
+ * @param {ListingSummary[]} props.listings - Array of listings to display.
+ * @param {string|null} props.token - The authentication token of the current user.
+ * @param {string} [props.userId] - The ID of the current user (optional).
+ * @returns {JSX.Element|null} The rendered section or null if no listings.
+ */
 export default function Section({
                                     title,
                                     listings,
@@ -16,7 +40,7 @@ export default function Section({
     listings: ListingSummary[];
     token: string | null;
     userId?: string;
-}) {
+}): JSX.Element | null {
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const scroll = (direction: 'left' | 'right') => {

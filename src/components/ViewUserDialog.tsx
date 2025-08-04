@@ -1,3 +1,7 @@
+/**
+ * ViewUserDialog component displays detailed information about a user, including their listing history.
+ * Allows admins to remove listings with a specified reason.
+ */
 import {User} from "../api/userApi.ts";
 import {ListingDetails} from "../api/listingApi.ts";
 import {useSellerHistory} from "../hooks/useSellerHistory.ts";
@@ -27,12 +31,36 @@ import {deleteListingAsAdmin} from "../api/adminApi.ts";
 import {useEffect, useState} from "react";
 import {useBids} from "../hooks/useBids.ts";
 
-interface ViewUserDialogProps {
+/**
+ * Props for the ViewUserDialog component.
+ * @property open - Whether the dialog is open.
+ * @property onClose - Callback to close the dialog.
+ * @property user - The user whose details are being viewed.
+ */
+type ViewUserDialogProps ={
     open: boolean;
     onClose: () => void;
     user: User;
 }
 
+const reasons = [
+    "Inappropriate", "Spam", "Against community guidelines",
+    "Hate speech", "Harassment", "Scam", "Illegal content", "Other"
+];
+
+
+/**
+ * Displays price information for a given listing based on its status and bids.
+ *
+ * @param listing - The listing details to display price info for.
+ *   - If status is "OPEN", shows the current highest bid or start price.
+ *   - If status is "SOLD", shows the final sale price.
+ *   - If status is "REMOVED", indicates removal.
+ *   - If status is "CLOSED", indicates unsold.
+ *   - Otherwise, shows nothing.
+ *
+ * Uses the `useBids` hook to fetch bids for the listing.
+ */
 function ListingPriceInfo({listing}: { listing: ListingDetails }) {
     const {data: bids = []} = useBids(listing.listingId);
     const [priceInfo, setPriceInfo] = useState('');
@@ -62,11 +90,23 @@ function ListingPriceInfo({listing}: { listing: ListingDetails }) {
     return <>{priceInfo}</>;
 }
 
-const reasons = [
-    "Inappropriate", "Spam", "Against community guidelines",
-    "Hate speech", "Harassment", "Scam", "Illegal content", "Other"
-];
-
+/**
+ * Displays a dialog with detailed information about a user, including their listings history.
+ * Allows an admin to remove a listing with a specified reason.
+ *
+ * @component
+ * @param {ViewUserDialogProps} props - The props for the dialog.
+ * @param {boolean} props.open - Whether the dialog is open.
+ * @param {() => void} props.onClose - Callback to close the dialog.
+ * @param {User} props.user - The user whose details are being viewed.
+ *
+ * Features:
+ * - Shows user details (email, role, status).
+ * - Displays paginated listing history for the user.
+ * - Allows removal of "OPEN" listings with a reason, using a confirmation dialog.
+ * - Uses React Query for data fetching and mutation.
+ * - Shows loading and error states.
+ */
 export default function ViewUserDialog({open, onClose, user}: ViewUserDialogProps) {
     const [page, setPage] = useState(1);
     const {data: listingsPage, isLoading, isError, error} = useSellerHistory(user?.userId, page - 1, 5);

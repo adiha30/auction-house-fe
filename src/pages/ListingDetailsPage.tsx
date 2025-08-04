@@ -1,3 +1,24 @@
+/**
+ * ListingDetailsPage Component
+ *
+ * A comprehensive page displaying all details for a specific auction listing:
+ * - Item details (title, description, category, images)
+ * - Current status (open, ended, removed)
+ * - Pricing information (current bid, buy-now price)
+ * - Time remaining or ended status
+ * - Bid history
+ * - Bidding functionality for authenticated non-sellers
+ * - Offer management system (create, accept, reject, withdraw)
+ * - Watch functionality
+ * - Admin controls for removing listings
+ * - Contact information exchange for completed transactions
+ *
+ * The component adapts its display and functionality based on:
+ * - User authentication status
+ * - User role (buyer, seller, admin)
+ * - Listing status
+ * - Bid/offer history
+ */
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -215,7 +236,7 @@ export default function ListingDetailsPage() {
                     {!isRemoved && (
                         <Stack direction="row" spacing={4} alignItems="center">
                             <Typography>
-                                <b>{resultLabel}</b> ${resultAmount.toLocaleString()}
+                                <b>{resultLabel}</b> ${resultAmount?.toLocaleString()}
                             </Typography>
                             {hasBuyNow && (
                                 <Typography>

@@ -1,3 +1,15 @@
+/**
+ * LoginPage Component
+ *
+ * Provides the user authentication interface with:
+ * - Username/email input field
+ * - Password input field
+ * - Login button
+ * - Navigation links to home page and registration page
+ *
+ * Uses Formik for form handling and Yup for validation.
+ * Upon successful authentication, redirects to the home page.
+ */
 import {Field, Form, Formik} from 'formik';
 import * as Yup from 'yup';
 import {Box, Button, Stack, TextField, Typography} from '@mui/material';

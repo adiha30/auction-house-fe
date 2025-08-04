@@ -1,3 +1,14 @@
+/**
+ * LiveBidFeed displays a real-time feed of recent bids placed on listings.
+ *
+ * @module components/LiveBidFeed
+ */
+
+/**
+ * Renders a live feed of recent bids, updating in real time.
+ *
+ * @returns The live bid feed component.
+ */
 import {Avatar, Box, Paper, Stack, Typography} from "@mui/material";
 import {AnimatePresence, motion} from "framer-motion";
 import {LiveBid, useLiveBids} from "../hooks/useLiveBids";
@@ -6,8 +17,19 @@ import {useNavigate} from "react-router-dom";
 import {useQuery} from "@tanstack/react-query";
 import {pretty} from "../pages/CreateListingPage";
 import axios from "../api/axios.ts";
+import {JSX} from "react";
 
-export default function LiveBidFeed() {
+/**
+ * LiveBidFeed component displays a real-time, animated feed of recent bids placed on listings.
+ *
+ * Fetches recent bids using React Query and updates in real time via the useLiveBids hook.
+ * Each bid is rendered as an interactive row, allowing navigation to the related listing.
+ * The feed is animated to scroll vertically in a loop, duplicating the feed for seamless animation.
+ *
+ * @function
+ * @returns {JSX.Element | null} The live bid feed UI, or null if there are no bids.
+ */
+export default function LiveBidFeed(): JSX.Element | null {
     const {data: feed = []} = useQuery<LiveBid[]>({
         queryKey: ['liveBids'],
         queryFn: () => axios.get<LiveBid[]>('/bids/recent').then(r => r.data),

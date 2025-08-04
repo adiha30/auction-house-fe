@@ -1,3 +1,17 @@
+/**
+ * ProfilePage Component
+ *
+ * Displays the authenticated user's profile information including:
+ * - Account details (username, email, name, phone, role)
+ * - Address information
+ * - Payment information (with masked credit card number)
+ *
+ * Provides functionality to:
+ * - Edit profile information
+ * - Delete account with confirmation dialog
+ *
+ * Uses the current user context and displays appropriate loading/error states.
+ */
 import React from 'react';
 import {
     Box,

@@ -1,3 +1,13 @@
+/**
+ * Axios instance configuration for API requests.
+ *
+ * This module exports a pre-configured Axios instance with:
+ * - Base URL set from API_URL in config.
+ * - Request interceptor that attaches a Bearer token from localStorage (if present) to the Authorization header.
+ *
+ * @module axios
+ */
+
 import axios from 'axios';
 import {API_URL} from './config';
 

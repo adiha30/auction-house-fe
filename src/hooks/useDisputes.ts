@@ -1,5 +1,10 @@
+/**
+ * Collection of hooks for managing dispute functionality.
+ * Provides functionality for creating disputes, retrieving dispute details,
+ * sending messages in disputes, and listing disputes.
+ */
 import {useNavigate} from "react-router-dom";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useMutation, UseMutationResult, useQuery, useQueryClient, UseQueryResult} from "@tanstack/react-query";
 import {
     addDisputeMessage,
     createDispute,
@@ -7,12 +12,16 @@ import {
     Dispute,
     getAllDisputes,
     getDispute,
-    getMyDisputes
+    getMyDisputes, PaginatedDisputes
 } from "../api/disputeApi.ts";
 import {enqueueSnackbar} from "notistack";
 import {useCurrentUser} from "./useCurrentUser.ts";
 
-export function useCreateDispute() {
+/**
+ * Custom hook that provides functionality to create a new dispute.
+ * @returns {Object} A mutation object with functions to create a dispute and track mutation state
+ */
+export function useCreateDispute(): UseMutationResult<string, Error, CreateDisputeRequest> {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -29,7 +38,12 @@ export function useCreateDispute() {
     });
 }
 
-export function useDispute(disputeId: string) {
+/**
+ * Custom hook that provides functionality to fetch a specific dispute.
+ * @param {string} disputeId - The ID of the dispute to fetch
+ * @returns {Object} Query object with dispute data and query state
+ */
+export function useDispute(disputeId: string): UseQueryResult<Dispute, Error> {
     return useQuery({
         queryKey: ['dispute', disputeId],
         queryFn: () => getDispute(disputeId),
@@ -38,7 +52,13 @@ export function useDispute(disputeId: string) {
     })
 }
 
-export const useAddDisputeMessage = (disputeId: string) => {
+/**
+ * Custom hook that provides functionality to add a message to a dispute.
+ * Uses optimistic updates to immediately show the message in the UI.
+ * @param {string} disputeId - The ID of the dispute to add a message to
+ * @returns {Object} A mutation object with functions to add a message and track mutation state
+ */
+export const useAddDisputeMessage = (disputeId: string): UseMutationResult<void, Error, { message: string, senderId: string }> => {
     const queryClient = useQueryClient();
     const {data: currentUser} = useCurrentUser();
 
@@ -83,7 +103,14 @@ export const useAddDisputeMessage = (disputeId: string) => {
     });
 };
 
-export function useMyDisputes(userId: string, page: number, size: number) {
+/**
+ * Custom hook that provides functionality to fetch disputes for the current user.
+ * @param {string} userId - The ID of the user whose disputes to fetch
+ * @param {number} page - The page number for pagination
+ * @param {number} size - The number of items per page
+ * @returns {Object} Query object with user's disputes data and query state
+ */
+export function useMyDisputes(userId: string, page: number, size: number): UseQueryResult<PaginatedDisputes, Error> {
     return useQuery({
         queryKey: ['disputes', 'my', {userId, page, size}],
         queryFn: () => getMyDisputes(userId!, page, size),
@@ -91,7 +118,15 @@ export function useMyDisputes(userId: string, page: number, size: number) {
     });
 }
 
-export function useAllDisputes(page: number, size: number, options?: { enabled?: boolean }) {
+/**
+ * Custom hook that provides functionality to fetch all disputes in the system.
+ * @param {number} page - The page number for pagination
+ * @param {number} size - The number of items per page
+ * @param {Object} [options] - Additional options for the query
+ * @param {boolean} [options.enabled] - Whether the query should be enabled
+ * @returns {Object} Query object with all disputes data and query state
+ */
+export function useAllDisputes(page: number, size: number, options?: { enabled?: boolean }): UseQueryResult<PaginatedDisputes, Error> {
     return useQuery({
         queryKey: ['disputes', 'all', {page, size}],
         queryFn: () => getAllDisputes(page, size),

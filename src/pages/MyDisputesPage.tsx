@@ -1,3 +1,15 @@
+/**
+ * MyDisputesPage Component
+ *
+ * Displays all disputes related to the authenticated user with viewing options:
+ * - Multiple view modes (list and gallery)
+ * - Status indicators for each dispute (open/resolved)
+ * - Role indicators showing if user is buyer or seller in each dispute
+ * - Pagination for managing large collections of disputes
+ * - Direct navigation to detailed dispute views
+ *
+ * Shows disputes where the current user is either the buyer or seller.
+ */
 import React, {useState} from "react";
 import {
     Avatar,

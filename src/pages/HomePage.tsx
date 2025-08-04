@@ -1,3 +1,19 @@
+/**
+ * HomePage Component
+ *
+ * The main landing page of the auction house application that displays:
+ * - Hero carousel for featured content
+ * - Welcome message for authenticated users
+ * - Quick access bar for navigation
+ * - Categories showcase
+ * - Active bids section for users with ongoing bids
+ * - User's listings section
+ * - Watched listings section
+ * - Hot listings by category
+ * - Live bid feed (collapsible)
+ *
+ * The component adapts its display based on user authentication status and role.
+ */
 import {Box, CircularProgress, Container, Grid, IconButton, Paper, Stack, Typography} from '@mui/material';
 import {RefObject, useRef, useState} from 'react';
 import {useQueries, useQuery} from '@tanstack/react-query';

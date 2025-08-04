@@ -1,3 +1,8 @@
+/**
+ * OfferRow displays a row representing an offer, with actions for accepting, rejecting, or withdrawing.
+ *
+ * @module components/OfferRow
+ */
 import {OfferResponse} from '../api/offerApi';
 import {useUser} from '../hooks/useUser';
 import {Box, IconButton, Stack, Typography} from '@mui/material';
@@ -5,7 +10,18 @@ import {formatDistanceToNow} from 'date-fns';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
-interface Props {
+/**
+ * Props for the OfferRow component.
+ * @property offer - The offer to display.
+ * @property isSeller - Whether the current user is the seller.
+ * @property isMine - Whether the offer belongs to the current user.
+ * @property onAccept - Callback to accept the offer.
+ * @property onReject - Callback to reject the offer.
+ * @property onWithdraw - Callback to withdraw the offer.
+ * @property disabled - Whether the action buttons are disabled.
+ * @property showUsername - Whether to show the offeror's username.
+ */
+type Props = {
     offer: OfferResponse;
     isSeller: boolean;
     isMine: boolean;
@@ -16,6 +32,18 @@ interface Props {
     showUsername?: boolean;
 }
 
+/**
+ * Renders a row for an offer with actions for seller or offeror.
+ *
+ * @param offer - The offer to display.
+ * @param isSeller - Whether the current user is the seller.
+ * @param isMine - Whether the offer belongs to the current user.
+ * @param onAccept - Callback to accept the offer.
+ * @param onReject - Callback to reject the offer.
+ * @param onWithdraw - Callback to withdraw the offer.
+ * @param disabled - Whether the action buttons are disabled.
+ * @param showUsername - Whether to show the offeror's username.
+ */
 export function OfferRow({
                              offer,
                              isSeller,

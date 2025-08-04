@@ -1,3 +1,16 @@
+/**
+ * CreateListingPage Component
+ *
+ * Provides a form interface for creating new auction listings with the following features:
+ * - Dynamic fields based on the selected category
+ * - Basic listing information (title, description, pricing)
+ * - Start price and optional buy-now price configuration
+ * - Auction duration selection
+ * - Image upload functionality with preview
+ * - Form validation using Yup schema
+ *
+ * The component adapts its form fields based on the category's required metadata.
+ */
 import {
     Box,
     Button,
