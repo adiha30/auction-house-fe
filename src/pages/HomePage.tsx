@@ -118,7 +118,7 @@ export default function HomePage() {
 
                             {!token && (
                                 <Box textAlign="center" mt={4}>
-                                    <Typography variant="h4" fontWeight={600} mb={20}>
+                                    <Typography variant="h4" fontWeight={600} mb={featuredQueries.length === 0 ? 20 : 4}>
                                         {`Welcome, Guest! Ready to win today?`}
                                     </Typography>
 
