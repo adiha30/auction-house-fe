@@ -1,6 +1,6 @@
 /**
  * ListingDetailsPage Component
- *
+ * 
  * A comprehensive page displaying all details for a specific auction listing:
  * - Item details (title, description, category, images)
  * - Current status (open, ended, removed)
@@ -12,7 +12,7 @@
  * - Watch functionality
  * - Admin controls for removing listings
  * - Contact information exchange for completed transactions
- *
+ * 
  * The component adapts its display and functionality based on:
  * - User authentication status
  * - User role (buyer, seller, admin)

@@ -1,12 +1,12 @@
 /**
  * EditProfilePage Component
- *
+ * 
  * Provides an interface for users to update their profile information:
  * - Basic account details (username, email, password)
  * - Contact information (phone number)
  * - Address information (street, city, zip code, country)
  * - Payment information with secure formatting (credit card details)
- *
+ * 
  * Uses Formik for form handling and Yup for validation rules,
  * with specialized formatting for credit card numbers and expiry dates.
  */

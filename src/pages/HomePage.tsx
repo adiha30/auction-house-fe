@@ -82,7 +82,7 @@ export default function HomePage() {
                                 <>
                                     <Box textAlign="center" mt={4}>
                                         <Typography variant="h4" fontWeight={600}>
-                                            {`Welcome back, ${toTitleCase(user?.username ?? '')}! ${!isAdmin ? "Ready to win today?" : ''}`}
+                                            {`Welcome back, ${toTitleCase(user?.firstName?? user?.username ?? '')}! ${!isAdmin ? "Ready to win today?" : ''}`}
                                         </Typography>
 
                                         <QuickAccessBar
@@ -114,6 +114,16 @@ export default function HomePage() {
                                         </div>
                                     )}
                                 </>
+                            )}
+
+                            {!token && (
+                                <Box textAlign="center" mt={4}>
+                                    <Typography variant="h4" fontWeight={600} mb={20}>
+                                        {`Welcome, Guest! Ready to win today?`}
+                                    </Typography>
+
+                                    <CategoriesShowcase/>
+                                </Box>
                             )}
 
                             {featuredQueries.slice(0, 5).map((q, i) => {

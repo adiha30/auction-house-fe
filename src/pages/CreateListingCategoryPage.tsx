@@ -1,12 +1,12 @@
 /**
  * CreateListingCategoryPage Component
- *
+ * 
  * First step of the listing creation process where users select a category:
  * - Displays a grid of available listing categories
  * - Each category shows a name and optional icon
  * - Clicking a category navigates to the detailed listing creation form
  * - Uses a clean, responsive grid layout for easy selection
- *
+ * 
  * This is the entry point for creating new auction listings.
  */
 import {useNavigate} from "react-router-dom";

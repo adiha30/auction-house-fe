@@ -1,13 +1,13 @@
 /**
  * MyListingsPage Component
- *
+ * 
  * Displays all listings created by the authenticated user with advanced filtering and viewing options:
  * - Tabbed interface for active and inactive listings
  * - Multiple view modes (list and gallery)
  * - Extensive sorting options (by title, bids, time to live)
  * - Filtering by bid count, closing method, and sold status
  * - Responsive layout with detailed listing information
- *
+ * 
  * This component is only available to non-admin users and redirects admins to the home page.
  */
 import React, {useEffect, useMemo, useState} from "react";

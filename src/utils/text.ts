@@ -6,7 +6,7 @@
 /**
  * Converts a string to title case format.
  * First letter of each word is capitalized, with the rest in lowercase.
- *
+ * 
  * @param str - The string to convert to title case
  * @returns The string in title case format
  */
