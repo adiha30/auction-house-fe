@@ -1,13 +1,13 @@
 /**
  * UserManagerPage Component
- *
+ * 
  * Admin interface for managing users with comprehensive functionality:
  * - Tabular display of user accounts with pagination
  * - Search functionality with debounced queries
  * - Filter options for active/inactive users
  * - User activation/deactivation with confirmation dialogs
  * - User profile viewing and editing capabilities
- *
+ * 
  * This component is only accessible to administrators and provides
  * complete user management functionality for the auction platform.
  */

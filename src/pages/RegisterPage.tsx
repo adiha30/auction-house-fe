@@ -195,8 +195,8 @@ export default function RegisterPage() {
                                 Home
                             </Button>
                             <Typography variant="body2" sx={{lineHeight: 2}}>•</Typography>
-                            <Button variant="text" size="small" onClick={() => nav('/register')}>
-                                Don't have an account? Register
+                            <Button variant="text" size="small" onClick={() => nav('/login')}>
+                                Already have an account? Login
                             </Button>
                         </Stack>
                     </Box>
