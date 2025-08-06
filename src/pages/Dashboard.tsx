@@ -1,3 +1,15 @@
+/**
+ * Dashboard Component
+ *
+ * Main dashboard interface with a tabbed navigation system that adapts based on user role:
+ * - Profile tab: Shows user profile information
+ * - My Listings tab: Displays listings created by the user (non-admin only)
+ * - Listings won tab: Shows listings the user has won (non-admin only)
+ * - User Manager tab: Admin interface for user management (admin only)
+ * - Disputes tab: Shows disputes (all users, with different views for admin/non-admin)
+ *
+ * Uses a vertical tab layout for navigation between different dashboard sections.
+ */
 import {Box, Tab, Tabs} from "@mui/material";
 import {useState} from "react";
 import ProfilePage from "./ProfilePage.tsx";

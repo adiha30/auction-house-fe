@@ -1,3 +1,16 @@
+/**
+ * ListingsPage Component
+ *
+ * Displays all auction listings with advanced filtering and navigation features:
+ * - Category filtering with a horizontally scrollable category selector
+ * - Search functionality with autocomplete
+ * - Sort options (recent, ending, popular)
+ * - Infinite scrolling for pagination
+ * - Responsive grid layout for listing cards
+ *
+ * The component maintains search parameters in URL for shareable filtered views
+ * and optimizes performance with pagination and lazy loading.
+ */
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {
     Autocomplete,

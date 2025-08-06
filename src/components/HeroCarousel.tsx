@@ -1,3 +1,14 @@
+/**
+ * HeroCarousel displays a carousel of featured listings with images and actions for bidding or buying now.
+ *
+ * @module components/HeroCarousel
+ */
+
+/**
+ * Renders the main hero carousel with featured listings.
+ *
+ * @returns The hero carousel component.
+ */
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -18,6 +29,15 @@ const pulse = keyframes`
   100% { opacity: .85; transform: scale(1); }
 `;
 
+/**
+ * HeroCarousel component displays a carousel of featured listings.
+ *
+ * Fetches up to 6 featured listings using the useFeaturedListings hook.
+ * If no featured listings are available, renders nothing.
+ * Otherwise, renders a Box containing a Slider (from react-slick) with one HeroSlide per listing.
+ *
+ * @returns {JSX.Element|null} The hero carousel component or null if no featured listings.
+ */
 export default function HeroCarousel() {
     const {data: featured = []} = useFeaturedListings(6);
     if (!featured.length) return null;
@@ -34,6 +54,11 @@ export default function HeroCarousel() {
     );
 }
 
+/**
+ * Renders a single slide in the hero carousel for a listing.
+ *
+ * @param listing - The listing to display in the slide.
+ */
 function HeroSlide({listing}: { listing: ListingSummary }) {
     const nav = useNavigate();
     const {token} = useAuth() || {};

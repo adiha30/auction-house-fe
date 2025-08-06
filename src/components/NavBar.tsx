@@ -1,12 +1,34 @@
+/**
+ * NavBar displays the main navigation bar for the application, with links and user actions.
+ *
+ * @module components/NavBar
+ */
+
+/**
+ * Renders the top navigation bar with links and user actions based on authentication state.
+ *
+ * @returns The navigation bar component.
+ */
 import {AppBar, Button, Toolbar, Typography} from '@mui/material';
 import {Link as RouterLink, useLocation, useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/AuthContext';
 import NotificationMenu from "./NotificationMenu.tsx";
 import {useCurrentUser} from "../hooks/useCurrentUser.ts";
+import {JSX} from "react";
 
 const hideOn = ['/login', '/register'];
 
-export default function NavBar() {
+/**
+ * NavBar component displays the main navigation bar for the application.
+ * Shows different links and actions based on authentication and user role.
+ *
+ * - Hides itself on `/login` and `/register` routes.
+ * - Shows "Listings", "Create" (for non-admins), "Settings", notifications, and "Logout" for authenticated users.
+ * - Shows "Listings", "Login", and "Register" for unauthenticated users.
+ *
+ * @returns {JSX.Element|null} The navigation bar component or null if hidden.
+ */
+export default function NavBar(): JSX.Element | null {
     const {token, setToken} = useAuth()!;
     const nav = useNavigate();
     const {pathname} = useLocation();

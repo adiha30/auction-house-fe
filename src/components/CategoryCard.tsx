@@ -1,8 +1,21 @@
+/**
+ * CategoryCard displays a single category as a clickable card, showing featured listings in a tooltip.
+ *
+ * @module components/CategoryCard
+ */
+
 import {useFeaturedCategoryListings} from "../hooks/useFeaturedCategoryListings.ts";
 import {CircularProgress, Paper, Stack, Tooltip, Typography} from "@mui/material";
 import {pretty} from "../pages/CreateListingPage.tsx";
 import {ReactNode} from "react";
 
+/**
+ * Renders a card for a category, with a tooltip showing featured listings or a loading indicator.
+ *
+ * @param name - The name of the category.
+ * @param icon - The icon to display for the category.
+ * @param onClick - Callback when the card is clicked.
+ */
 export default function CategoryCard({name, icon, onClick}: { name: string; icon: ReactNode; onClick: () => void }) {
     const {data: featured, isLoading} = useFeaturedCategoryListings(name);
 

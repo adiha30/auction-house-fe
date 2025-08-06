@@ -1,3 +1,16 @@
+/**
+ * AllDisputesPage Component
+ *
+ * Admin interface for managing all disputes in the auction system:
+ * - Comprehensive view of all disputes regardless of user
+ * - Multiple view modes (list and gallery)
+ * - Detailed dispute information including buyer/seller details
+ * - Pagination for efficient management of large dispute volumes
+ * - Direct navigation to detailed dispute views
+ *
+ * This component is accessible only to users with the Admin role and
+ * provides oversight of the entire dispute resolution system.
+ */
 import {
     Alert,
     Box,

@@ -1,8 +1,21 @@
+/**
+ * UserActionsMenu displays action buttons for viewing, editing, activating, or deactivating a user.
+ *
+ * @module components/UserActionsMenu
+ */
 import {Button} from '@mui/material';
 import {Delete, Edit as Pencil, RestartAlt, Visibility as Eye} from "@mui/icons-material";
 import {User} from "../api/userApi.ts";
 
-interface UserActionsMenuProps {
+/**
+ * Props for the UserActionsMenu component.
+ * @property user - The user for which actions are shown.
+ * @property onView - Callback to view the user.
+ * @property onEdit - Callback to edit the user.
+ * @property onDeactivate - Callback to deactivate the user.
+ * @property onActivate - Callback to activate the user.
+ */
+type UserActionsMenuProps = {
     user: User;
     onView: (user: User) => void;
     onEdit: (user: User) => void;
@@ -10,6 +23,15 @@ interface UserActionsMenuProps {
     onActivate: (user: User) => void;
 }
 
+/**
+ * Renders a menu of action buttons for user management.
+ *
+ * @param user - The user for which actions are shown.
+ * @param onView - Callback to view the user.
+ * @param onEdit - Callback to edit the user.
+ * @param onDeactivate - Callback to deactivate the user.
+ * @param onActivate - Callback to activate the user.
+ */
 export default function UserActionsMenu({user, onView, onEdit, onDeactivate, onActivate}: UserActionsMenuProps) {
     return (
         <>

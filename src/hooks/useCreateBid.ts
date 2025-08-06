@@ -1,15 +1,27 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+/**
+ * Hook for creating bids on listings.
+ * Provides functionality to place regular bids or buy-now bids with error handling and cache invalidation.
+ */
+import {useMutation, UseMutationResult, useQueryClient} from '@tanstack/react-query';
 import {enqueueSnackbar} from 'notistack';
 import {createBid, CreateBidPayload} from '../api/bidApi';
 import {AxiosError} from "axios";
 import {useCurrentUser} from "./useCurrentUser.ts";
 import {useNavigate} from "react-router-dom";
 
-export const useCreateBid = (listingId: string) => {
-    const queryClient = useQueryClient();
+/**
+ * Custom hook that provides functionality to create bids on a listing.
+ * Handles validation for user address, success/error states, and cache invalidation.
+ * @param {string} listingId - The ID of the listing to bid on
+ * @returns {Object} A mutation object with functions to create a bid and track mutation state
+ */
+export const useCreateBid = (listingId: string): UseMutationResult<any, AxiosError<{ cause?: string }>, Omit<CreateBidPayload, 'listingId'>> => {    const queryClient = useQueryClient();
     const {data: user} = useCurrentUser();
     const nav = useNavigate();
 
+    /**
+     * Invalidates related queries after a successful bid
+     */
     function invalidateListingQueries() {
         queryClient.invalidateQueries({
             predicate: (query) => {

@@ -1,8 +1,16 @@
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+/**
+ * Hook for deactivating user accounts.
+ * Provides functionality to deactivate a user account with success/error handling.
+ */
+import {useMutation, UseMutationResult, useQueryClient} from '@tanstack/react-query';
 import {enqueueSnackbar} from 'notistack';
 import {deactivateUser} from '../api/userApi';
 
-export const useDeactivateUser = () => {
+/**
+ * Custom hook that provides functionality to deactivate a user account.
+ * @returns {Object} A mutation object with functions to deactivate a user and track mutation state
+ */
+export const useDeactivateUser = (): UseMutationResult<string, Error, string> => {
     const qc = useQueryClient();
 
     return useMutation({

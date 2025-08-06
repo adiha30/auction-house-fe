@@ -1,3 +1,16 @@
+/**
+ * DisputePage Component
+ *
+ * Provides a comprehensive interface for managing auction disputes:
+ * - Real-time dispute messaging system between buyers, sellers, and admins
+ * - Message history with user identification
+ * - Listing details related to the dispute
+ * - Dispute resolution controls for administrators
+ * - Status indicators for the dispute process
+ *
+ * This component adapts its functionality based on the user's role in the dispute
+ * (buyer, seller, or admin) and the current status of the dispute.
+ */
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {
