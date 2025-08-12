@@ -56,7 +56,7 @@ export default function NavBar(): JSX.Element | null {
                         {!isAdmin && (
                             <Button component={RouterLink} to="/create" color="inherit">Create</Button>
                         )}
-                        <Button component={RouterLink} to="/dashboard" color="inherit">Settings</Button>
+                        <Button component={RouterLink} to="/dashboard" color="inherit">Control Panel</Button>
                         <NotificationMenu/>
                         <Button onClick={handleLogout} color="inherit">Logout</Button>
                     </>
