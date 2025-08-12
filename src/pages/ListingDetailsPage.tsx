@@ -1,6 +1,6 @@
 /**
  * ListingDetailsPage Component
- * 
+ *
  * A comprehensive page displaying all details for a specific auction listing:
  * - Item details (title, description, category, images)
  * - Current status (open, ended, removed)
@@ -12,7 +12,7 @@
  * - Watch functionality
  * - Admin controls for removing listings
  * - Contact information exchange for completed transactions
- * 
+ *
  * The component adapts its display and functionality based on:
  * - User authentication status
  * - User role (buyer, seller, admin)
@@ -71,6 +71,7 @@ import {pretty} from "./CreateListingPage.tsx";
 import {deleteListingAsAdmin} from "../api/adminApi.ts";
 import {useUser} from "../hooks/useUser.ts";
 import {ContactInfoCard} from "../components/ContactInfoCard.tsx";
+import Slider from "react-slick";
 
 export default function ListingDetailsPage() {
     const qc = useQueryClient();
@@ -129,6 +130,8 @@ export default function ListingDetailsPage() {
     const rejectOffer = useRejectOffer(id!);
     const withdrawOffer = useWithdrawOffer(id!);
     const {watching, toggle} = useWatch(id!);
+
+    const hasMultipleImages = listing?.item?.imageIds?.length > 1;
 
     if (isLoading) return <CircularProgress sx={{mt: 8}}/>;
 
@@ -207,8 +210,36 @@ export default function ListingDetailsPage() {
             </Dialog>
 
             <Card sx={{maxWidth: 800, p: 2}}>
-                <CardMedia component="img" height="320" image={listing.item.imageIds[0]}
-                           alt={toTitleCase(listing.item.title)}/>
+                {hasMultipleImages ? (
+                    <Slider
+                        dots={true}
+                        infinite={true}
+                        speed={500}
+                        slidesToShow={1}
+                        slidesToScroll={1}
+                        adaptiveHeight={true}
+                    >
+                        {listing.item.imageIds.map((imgId: string) => (
+                            <div key={imgId}>
+                                <img
+                                    src={`${imgId}`}
+                                    alt={listing.item.title}
+                                    style={{
+                                        width: "100%",
+                                        maxHeight: "400px",
+                                        objectFit: "contain",
+                                        borderRadius: "8px",
+                                        margin: "0 auto",
+                                        display: "block"
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </Slider>
+                ) : (
+                    <CardMedia component="img" height="320" image={listing.item.imageIds[0]}
+                               alt={toTitleCase(listing.item.title)}/>
+                )}
                 <CardContent>
                     <Stack direction="row" spacing={1} alignItems="center" sx={{mb: 1}}>
                         <Typography variant="h4">{toTitleCase(listing.item.title)}</Typography>
@@ -372,7 +403,8 @@ export default function ListingDetailsPage() {
                 </CardContent>
             </Card>
         </Box>
-    );
+    )
+        ;
 }
 
 function ErrorBlock({message, onRetry}: { message: string; onRetry: () => void }) {
